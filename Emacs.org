@@ -35,72 +35,33 @@ straight.el: next-generation, purely functional package manager for the Emacs
 hacker.
 
 #+begin_src emacs-lisp
-      (defvar bootstrap-version)
-      (let ((bootstrap-file
-	     (expand-file-name
-	      "straight/repos/straight.el/bootstrap.el"
-	      (or (bound-and-true-p straight-base-dir)
-		  user-emacs-directory)))
-	    (bootstrap-version 7))
-	(unless (file-exists-p bootstrap-file)
-	  (with-current-buffer
-	      (url-retrieve-synchronously
-	       "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	       'silent 'inhibit-cookies)
-	    (goto-char (point-max))
-	    (eval-print-last-sexp)))
-	(load bootstrap-file nil 'nomessage))
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name
+	  "straight/repos/straight.el/bootstrap.el"
+	  (or (bound-and-true-p straight-base-dir)
+	      user-emacs-directory)))
+	(bootstrap-version 7))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
   ;;By default, use-package uses package.el to install packages
   ;;To configure use-package to always use straight.el, use use-package to configure straight.el
   ;;to turn on straight-use-package-by-default.
-    (use-package straight
-      :ensure nil
-      :custom
-      (straight-use-package-by-default t))
+  (use-package straight
+    :ensure nil
+    :custom
+    (straight-use-package-by-default t))
 
 #+end_src
+
 
 * Basic Setup
-** Keep Folders Clean
-use the no-littering package to keep folders where we edit files and the Emacs
-configuration folder clean! It knows about a wide variety of variables for built
-in Emacs features as well as those from community packages so it can be much
-easier than finding and setting these variables yourself.
-
-#+begin_src emacs-lisp
-  (use-package no-littering
-    :straight t
-    :config
-    (require 'recentf)
-    (add-to-list 'recentf-exclude no-littering-var-directory)
-    (add-to-list 'recentf-exclude no-littering-etc-directory)
-
-    ;; no-littering doesn't set this by default so we must place
-    ;; auto save files in the same path as it uses for sessions
-    (setq auto-save-file-name-transforms
-	  `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-
-    ;; Emacs will save customizations into your init.el file by default. If you don't
-    ;; want that, you might want to store them in a sibling file or even in the etc/
-    ;; directory:
-
-    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-    )
-  (setq make-backup-files nil)
-#+end_src
-
-** Auto Wrap lines
-#+begin_src emacs-lisp
-(global-visual-line-mode 1)
-#+end_src
-
-** Window Switch
-#+begin_src emacs-lisp
-  (use-package ace-window
-    :straight t)
-  (global-set-key (kbd "M-o") 'ace-window)
-#+end_src
-
 ** Evil Mode
 Evil is an extensible vi layer for Emacs. It emulates the main features of Vim,
 turning Emacs into a modal editor. Like Emacs in general, Evil is extensible in
@@ -137,29 +98,80 @@ Emacs Lisp.
     :config
     (evilnc-default-hotkeys))
 
+  ;; (use-package general
+  ;;   :straight t
+  ;;   :config
+  ;;   (general-define-key
+  ;;    :prefix "SPC"
+  ;;    :states '(normal visual)
+  ;; "f" 'find-file
+  ;; "b" 'switch-to-buffer
+  ;; "w" 'save-buffer
+  ;; ;; 更多自定义命令...
+  ;; ))
+  ;; general package will be slow.  use evil-leader first
+  (use-package evil-leader
+    :straight t
+    :init
+    (global-evil-leader-mode)
+    :config
+    (evil-leader/set-leader "SPC")
+    (evil-leader/set-key
+      "b" 'counsel-switch-buffer
+      "f" 'counsel-fzf
+      "p" 'projectile-command-map))
+
   ;; (use-package evil-matchit
   ;; :straight t
   ;; :config
   ;; (global-evil-matchit-mode 1))
-  
+
+#+end_src
+
+** Keep Folders Clean
+use the no-littering package to keep folders where we edit files and the Emacs
+configuration folder clean! It knows about a wide variety of variables for built
+in Emacs features as well as those from community packages so it can be much
+easier than finding and setting these variables yourself.
+
+#+begin_src emacs-lisp
+  (use-package no-littering
+    :straight t
+    :config
+    (require 'recentf)
+    (add-to-list 'recentf-exclude no-littering-var-directory)
+    (add-to-list 'recentf-exclude no-littering-etc-directory)
+
+    ;; no-littering doesn't set this by default so we must place
+    ;; auto save files in the same path as it uses for sessions
+    (setq auto-save-file-name-transforms
+	  `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+    ;; Emacs will save customizations into your init.el file by default. If you don't
+    ;; want that, you might want to store them in a sibling file or even in the etc/
+    ;; directory:
+
+    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+    )
+  (setq make-backup-files nil)
+#+end_src
+
+** Auto Wrap lines
+#+begin_src emacs-lisp
+  (global-visual-line-mode 1)
+#+end_src
+
+** Window Switch
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :straight t)
+  (global-set-key (kbd "M-o") 'ace-window)
 #+end_src
 
 ** Which Key 
 
 #+begin_src emacs-lisp
-  (use-package general
-    :straight t
-    :config
-    (general-define-key
-     :prefix "SPC"
-     :states '(normal visual)
-     "f" 'find-file
-     "b" 'switch-to-buffer
-     "w" 'save-buffer
-     ;; 更多自定义命令...
-     ))
-
-    (use-package which-key
+  (use-package which-key
     :straight t
     :config
     (which-key-mode)  ;; Enable which-key
@@ -184,21 +196,21 @@ information about each item.
 
 #+begin_src emacs-lisp
   (use-package ivy
-  :straight t
+    :straight t
     :bind (
-	     ("C-s" . swiper)
-	     :map ivy-minibuffer-map
-	     ("TAB" . ivy-alt-done)
-	     ("C-l" . ivy-alt-done)
-	     ("C-j" . ivy-next-line)
-	     ("C-k" . ivy-previous-line)
-	     :map ivy-switch-buffer-map
-	     ("C-k" . ivy-previous-line)
-	     ("C-l" . ivy-done)
-	     ("C-d" . ivy-switch-buffer-kill)
-	     :map ivy-reverse-i-search-map
-	     ("C-k" . ivy-previous-line)
-	     ("C-d" . ivy-reverse-i-search-kill))
+	   ("C-s" . swiper)
+	   :map ivy-minibuffer-map
+	   ("TAB" . ivy-alt-done)
+	   ("C-l" . ivy-alt-done)
+	   ("C-j" . ivy-next-line)
+	   ("C-k" . ivy-previous-line)
+	   :map ivy-switch-buffer-map
+	   ("C-k" . ivy-previous-line)
+	   ("C-l" . ivy-done)
+	   ("C-d" . ivy-switch-buffer-kill)
+	   :map ivy-reverse-i-search-map
+	   ("C-k" . ivy-previous-line)
+	   ("C-d" . ivy-reverse-i-search-kill))
     :config
     (setq ivy-use-virtual-buffers t)
     (setq ivy-wrap t)
@@ -223,25 +235,98 @@ information about each item.
   (use-package counsel
     :straight t
     :bind (("M-x" . counsel-M-x)
-	     ("C-x b" . counsel-switch-buffer)
-	     ("C-M-j" . 'counsel-switch-buffer)
-	     ("C-x C-b" . counsel-ibuffer)
-	     ("M-y" . counsel-yank-pop)
-	     ("C-x C-r" . counsel-recentf)
-	     ("C-x C-f" . counsel-find-file)
-	     :map minibuffer-local-map
-	     ("C-r" . 'counsel-minibuffer-history))
+	   ("C-x b" . counsel-switch-buffer)
+	   ("C-M-j" . 'counsel-switch-buffer)
+	   ("C-x C-b" . counsel-ibuffer)
+	   ("M-y" . counsel-yank-pop)
+	   ("C-x C-r" . counsel-recentf)
+	   ("C-x C-f" . counsel-find-file)
+	   :map minibuffer-local-map
+	   ("C-r" . 'counsel-minibuffer-history))
     ;;:custom
     ;;(counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
     :config
     (counsel-mode 1))
-
 #+end_src
 
+** Projectile
+#+begin_src emacs-lisp
+  (use-package projectile
+    :straight t
+    :config
+    (projectile-mode t))
+#+end_src
+** Dashboard
+#+begin_src emacs-lisp
+  (use-package nerd-icons
+    :straight t)
+  
+  (use-package dashboard
+  :straight t
+  :config
+  ;; 基础设置
+  (setq dashboard-center-content t)
+  (setq dashboard-items '((recents   . 5)
+			(bookmarks . 5)
+			(projects  . 5)
+			(agenda    . 5)
+			(registers . 5)))
+  (setq dashboard-item-shortcuts '((recents   . "r")
+				 (bookmarks . "m")
+				 (projects  . "p")
+				 (agenda    . "a")
+				 (registers . "e")))
+  (setq dashboard-display-icons-p t)     ; display icons on both GUI and terminal
+  (setq dashboard-icon-type 'nerd-icons) ; use `nerd-icons' package
+
+
+  (setq dashboard-startupify-list '(dashboard-insert-banner
+				  dashboard-insert-newline
+				  dashboard-insert-banner-title
+				  dashboard-insert-newline
+				  dashboard-insert-navigator
+				  dashboard-insert-newline
+				  dashboard-insert-init-info
+				  dashboard-insert-items
+				  dashboard-insert-newline
+				  dashboard-insert-footer))
+
+  ;; 自定义横幅和标题
+  (dashboard-setup-startup-hook))
+#+end_src
+
+
+* Programing
+** Company
+#+begin_src emacs-lisp
+  (use-package  company
+    :straight t
+    :config
+    (global-company-mode)
+    (setq company-idle-delay 0.5)
+    )
+  (use-package company-box
+    :straight t
+    :hook
+    (company-mode . company-box-mode))
+#+end_src
+** Eglot
+#+begin_src emacs-lisp
+  (require 'eglot)
+#+end_src
+** LSP
+#+begin_src emacs-lisp
+  (add-hook 'python-mode-hook 'eglot-ensure)
+  (use-package rust-mode
+    :straight t)
+  (add-hook 'rust-mode-hook 'eglot-ensure)
+  (add-hook 'c-mode-hook 'eglot-ensure)
+#+end_src
 
 * Org Mode
 ** Format Org File
 #+begin_src emacs-lisp
+  (require 'org-tempo)
   (setq-default fill-column 80)
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
 #+end_src
