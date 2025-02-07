@@ -247,6 +247,20 @@ information about each item.
     ;;(counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
     :config
     (counsel-mode 1))
+
+  (use-package ivy-prescient
+    :straight t
+  :after counsel
+  :custom
+  (ivy-prescient-enable-filtering nil)
+  :config
+  ;; Uncomment the following line to have sorting remembered across sessions!
+  (prescient-persist-mode 1)
+  (ivy-prescient-mode 1))
+
+  (use-package smex ;; adds M-x recent commmand sorting for counsel-M-x
+    :straight t
+    :after counsel)
 #+end_src
 
 ** Projectile
@@ -295,6 +309,47 @@ information about each item.
   (dashboard-setup-startup-hook))
 #+end_src
 
+** UI
+*** modeline
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+  :straight t
+  :init
+  (doom-modeline-mode 1))
+#+end_src
+*** File tree
+#+begin_src emacs-lisp
+  (use-package treemacs
+    :straight t
+    :config
+    (treemacs-follow-mode t))
+#+end_src
+*** theme & hightlight
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :straight t
+    :config
+    (global-tree-sitter-mode))
+
+  (use-package tree-sitter-langs
+    :straight t)
+
+  (use-package doom-themes
+    :straight t
+    :config
+    (load-theme 'doom-one t))
+
+  (use-package dimmer
+    :straight t)
+  (require 'dimmer)
+  (dimmer-configure-which-key)
+  (dimmer-mode t)
+
+  (use-package diff-hl
+    :straight t)
+  (global-diff-hl-mode)
+#+end_src
+
 
 * Programing
 ** Company
@@ -322,6 +377,7 @@ information about each item.
   (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
 #+end_src
+
 
 * Org Mode
 ** Format Org File
