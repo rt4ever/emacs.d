@@ -244,13 +244,58 @@ information about each item.
 #+end_src
 *** Theme & hightlight
 #+begin_src emacs-lisp
-  (use-package tree-sitter
-    :straight t
-    :config
-    (global-tree-sitter-mode))
+  (global-visual-line-mode 1)
 
-  (use-package tree-sitter-langs
+  (if (display-graphic-p)
+      (progn
+	(scroll-bar-mode -1)        ; Disable visible scrollbar
+	(tool-bar-mode -1)          ; Disable the toolbar
+	(tooltip-mode -1)           ; Disable tooltips
+	(set-fringe-mode 10)        ; Give some breathing room
+	(menu-bar-mode -1)            ; Disable the menu bar
+	))
+
+  ;; Set up the visible bell
+  (setq visible-bell t)
+  (display-time-mode 1)
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+
+  ;; Set frame transparenc
+  (defvar my/frame-transparency '(95 . 95))
+  (set-frame-parameter (selected-frame) 'alpha my/frame-transparency)
+  (add-to-list 'default-frame-alist `(alpha . ,my/frame-transparency))
+  ;; (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+  ;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+  ;; Get font from https://www.fontsquirrel.com/fonts
+  (defvar my/default-font-size 160)
+  (defvar my/default-variable-font-size 160)
+  (if (display-graphic-p)
+      (progn
+	;; Set the fixed pitch face
+	(set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height my/default-font-size)
+	(set-face-attribute 'default nil :font "JetBrains Mono" :height my/default-font-size)
+	(set-face-attribute 'variable-pitch nil :font "Source Sans Pro" :height my/default-font-size :weight 'regular)
+	   ))
+
+  (use-package unicode-fonts
     :straight t)
+    (require 'unicode-fonts)
+  (unicode-fonts-setup)
+  (cond
+   ((eq system-type 'darwin)
+    (setq initial-frame-alist '((top . 10)
+				(left . 60)
+				   (width . 85)
+				   (height . 50))))
+   ((eq system-type 'windows-nt)
+    (setq initial-frame-alist '((top . 10)
+				(left . 10)
+				(width . 100)
+				   (height . 45))))
+   (t
+    (message "for other system")))
 
   (use-package doom-themes
     :straight t
@@ -286,44 +331,48 @@ information about each item.
 ** Eglot
 #+begin_src emacs-lisp
   (require 'eglot)
+  (setq eldoc-echo-area-use-multiline-p nil)
+
+  ;; Emacs Corfu (Completion Overlay Region FU) 是一个用于 Emacs 的补全框架，
+  ;; 它提供了一种新的用户界面来显示补全候选项。Corfu 是 Emacs的一个外部包，
+  ;; 它致力于提供一种直观且高效的补全体验。以下是一些 Corfu 的主要特性和功能：
+
+  (use-package corfu
+    :straight t
+    :custom
+    (corfu-auto t)
+    (corfu-cycle t)
+    :hook ((prog-mode . corfu-mode))
+    :bind
+    (:map corfu-map
+	  ("TAB" . corfu-next)
+	  ([tab] . corfu-next)
+	  ("S-TAB" . corfu-previous)
+	  ([backtab] . corfu-previous))
+    :init
+    (global-corfu-mode))
+
+  ;; Optionally use the `orderless' completion style.
+  (use-package orderless
+    :custom
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (orderless-style-dispatchers '(+orderless-dispatch))
+    ;; (orderless-component-separator #'orderless-escapable-split-on-space)
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles partial-completion)))))
+
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
   (add-hook 'python-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
   (use-package rust-mode
-    :straight t)
+      :straight t)
   (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'c++-mode-hook 'eglot-ensure)
 
-  ;; verilog
-  (use-package verilog-ext
-    :straight t
-    :init
-    (setq verilog-ext-feature-list
-	  '(font-lock
-	    xref
-	    capf
-	    hierarchy
-	    eglot
-	    flycheck
-	    beautify
-	    navigation
-	    template
-	    formatter
-	    compilation
-	    imenu
-	    which-func
-	    hideshow
-	    typedefs
-	    time-stamp
-	    block-end-comments
-	    ports))
-    :config
-    (verilog-ext-mode-setup))
-  (add-hook 'verilog-mode-hook 'eglot-ensure)
-  (add-hook 'verilog-mode-hook #'verilog-ext-mode)
-  (add-to-list 'eglot-server-programs
-	       '(verilog-mode . ("verible-verilog-ls")))
 #+end_src
 
 
