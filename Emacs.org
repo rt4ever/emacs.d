@@ -62,6 +62,16 @@ hacker.
 
 
 * Basic Setup
+** PATH
+#+begin_src emacs-lisp
+  (if (eq system-type 'darwin)
+      (use-package exec-path-from-shell
+	:straight t
+	:config
+	 (exec-path-from-shell-initialize))
+    )
+
+#+end_src
 ** Keep Folders Clean
 use the no-littering package to keep folders where we edit files and the Emacs
 configuration folder clean! It knows about a wide variety of variables for built
@@ -373,6 +383,35 @@ information about each item.
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure)
 
+  (use-package verilog-ext
+    :straight t
+    :init
+    (setq verilog-ext-feature-list
+	  '(font-lock
+	    xref
+	    capf
+	    hierarchy
+	    eglot
+	    flycheck
+	    beautify
+	    navigation
+	    template
+	    formatter
+	    compilation
+	    imenu
+	    which-func
+	    hideshow
+	    typedefs
+	    time-stamp
+	    block-end-comments
+	    ports))
+    :hook (verilog-mode . verilog-ext-mode)
+    :config
+    (verilog-ext-mode-setup))
+
+  (add-hook 'verilog-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs
+	       '(verilog-mode . ("verible-verilog-ls")))
 #+end_src
 
 
@@ -437,6 +476,7 @@ Emacs Lisp.
 
   (with-eval-after-load 'evil
     (define-key evil-normal-state-map (kbd "C-z") 'suspend-frame)
+    (define-key evil-insert-state-map (kbd "C-z") 'suspend-frame)
     (define-key evil-emacs-state-map (kbd "C-z") 'suspend-frame)
 
     (define-key evil-normal-state-map (kbd "C-M-z") 'evil-emacs-state)
