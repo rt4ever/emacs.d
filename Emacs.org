@@ -492,8 +492,9 @@ your currently entered incomplete command (a prefix) in a popup.
     :config
     (which-key-mode)  ;; Enable which-key
     (setq which-key-idle-delay 0.3)  ;; Show keybinding hints after a short delay
-    (setq which-key-popup-type 'side-window)  ;; Display keybindings in a side window (other options: 'mini-window)
-    (setq which-key-side-window-location 'right)  ;; Position the popup on the right side of the screen
+    ;;(setq which-key-popup-type 'side-window)  ;; Display keybindings in a side window (other options: 'mini-window)
+    ;;(setq which-key-side-window-location 'right)  ;; Position the popup on the right side of the screen
+    ;; side-window cause running timer error
     (setq which-key-max-description-length 30)  ;; Max length for descriptions in the popup
     (setq which-key-min-display-lines 10)  ;; Show at least 10 lines in the popup
     (setq which-key-show-early-on-C-h t)  ;; Show keybindings as soon as you press `C-h`
