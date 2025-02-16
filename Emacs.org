@@ -438,6 +438,8 @@ Emacs Lisp.
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
     (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
+    (define-key evil-motion-state-map " " nil)
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -446,33 +448,14 @@ Emacs Lisp.
     :config
     (evilnc-default-hotkeys))
 
-  ;; (use-package general
-  ;; :straight t
-  ;; :after evil)
-
   ;; general package will be slow.  use evil-leader first
   (use-package evil-collection
     :straight t
     :after evil
+    :custom
+    (evil-collection-setup-minibuffer t)
     :config
     (evil-collection-init))
-
-
-  ;;(use-package evil-leader
-  ;;  :straight t
-  ;;  :init
-  ;;  (global-evil-leader-mode)
-  ;;  :config
-  ;;  (evil-leader/set-leader "SPC"))
-  ;;    (evil-leader/set-key
-  ;;    "b" 'counsel-switch-buffer
-  ;;  "f" 'counsel-fzf
-  ;; "p" 'projectile-command-map))
-
-  ;; (use-package evil-matchit
-  ;; :straight t
-  ;; :config
-  ;; (global-evil-matchit-mode 1))
 
   (with-eval-after-load 'evil
     (define-key evil-normal-state-map (kbd "C-z") 'suspend-frame)
