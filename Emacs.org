@@ -414,6 +414,18 @@ information about each item.
 	       '(verilog-mode . ("verible-verilog-ls")))
 #+end_src
 
+** Flycheck
+#+begin_src emacs-lisp
+  (remove-hook 'prog-mode-hook 'flymake-mode)
+
+  (use-package flycheck
+    :straight t
+    :init
+    (global-flycheck-mode)
+    :config
+    (setq flycheck-checker (default-value 'flycheck-checkers)))
+
+#+end_src
 
 * Keymap
 ** Evil Mode
