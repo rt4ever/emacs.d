@@ -378,7 +378,7 @@ information about each item.
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
   (use-package rust-mode
-      :straight t)
+    :straight t)
   (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure)
@@ -387,31 +387,32 @@ information about each item.
     :straight t
     :init
     (setq verilog-ext-feature-list
-	  '(font-lock
-	    xref
-	    capf
-	    hierarchy
-	    eglot
-	    flycheck
-	    beautify
-	    navigation
-	    template
-	    formatter
-	    compilation
-	    imenu
-	    which-func
-	    hideshow
-	    typedefs
-	    time-stamp
-	    block-end-comments
-	    ports))
+    	'(font-lock
+    	  xref
+    	  capf
+    	  hierarchy
+    	  eglot
+    	  flycheck
+    	  beautify
+    	  navigation
+    	  template
+    	  formatter
+    	  compilation
+    	  imenu
+    	  which-func
+    	  hideshow
+    	  typedefs
+    	  time-stamp
+    	  block-end-comments
+    	  ports))
     :hook (verilog-mode . verilog-ext-mode)
     :config
+    (setq verilog-ext-flycheck-linter 'verilog-verible)
     (verilog-ext-mode-setup))
 
   (add-hook 'verilog-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-server-programs
-	       '(verilog-mode . ("verible-verilog-ls")))
+    	     '(verilog-mode . ("verible-verilog-ls")))
 #+end_src
 
 ** Flycheck
