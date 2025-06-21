@@ -383,71 +383,48 @@ information about each item.
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure)
 
-  (use-package verilog-ext
-    :straight t
-    :init
-    (setq verilog-ext-feature-list
-    	'(font-lock
-    	  xref
-    	  capf
-    	  hierarchy
-    	  eglot
-    	  flycheck
-    	  beautify
-    	  navigation
-    	  template
-    	  formatter
-    	  compilation
-    	  imenu
-    	  which-func
-    	  hideshow
-    	  typedefs
-    	  time-stamp
-    	  block-end-comments
-    	  ports))
-    :hook (verilog-mode . verilog-ext-mode)
-    :config
-    (setq verilog-ext-flycheck-linter 'verilog-verible)
-    (verilog-ext-mode-setup))
+  (setq eglot-server-programs
+      (cond
+       ;; macOS 设置 (使用 MacPorts 安装的 clangd)
+       ((eq system-type 'darwin)
+        '((c-mode . ("/opt/local/bin/clangd-mp-20"))
+          (c++-mode . ("/opt/local/bin/clangd-mp-20"))))
 
-  (add-hook 'verilog-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-server-programs
-    	     '(verilog-mode . ("verible-verilog-ls")))
+       ;; Linux 设置
+       ((eq system-type 'gnu/linux)
+        '((c-mode . ("/usr/bin/clangd"))
+          (c++-mode . ("/usr/bin/clangd"))))
+
+       ;; 默认 fallback 设置（如 Windows 或未知平台）
+       (t
+        '((c-mode . ("clangd"))
+          (c++-mode . ("clangd"))))))
+
 #+end_src
 
-** Flycheck
+** Linter
 #+begin_src emacs-lisp
-  (remove-hook 'prog-mode-hook 'flymake-mode)
+  (with-eval-after-load 'flymake
+    (define-key flymake-mode-map (kbd "C-c ! l") 'flymake-show-buffer-diagnostics)
+    (define-key flymake-mode-map (kbd "C-c ! n") 'flymake-goto-next-error)
+    (define-key flymake-mode-map (kbd "C-c ! p") 'flymake-goto-prev-error))
 
-  (use-package flycheck
-    :straight t
-    :init
-    (global-flycheck-mode)
-    :config
-    (setq flycheck-checker (default-value 'flycheck-checkers)))
+  (setq flymake-no-changes-timeout nil) ;; 避免自动触发，不干扰打字
+  (setq flymake-start-on-save-buffer t)
+  (setq flymake-start-on-flymake-mode t)
 
-  (use-package flycheck-eglot
-    :ensure t
-    :after (flycheck eglot)
-    :config
-    (global-flycheck-eglot-mode 1))
+  (add-hook 'prog-mode-hook 'flymake-mode)
 
-  (setq eglot-server-programs
-        (cond
-         ;; macOS 设置 (使用 MacPorts 安装的 clangd)
-         ((eq system-type 'darwin)
-  	'((c-mode . ("/opt/local/bin/clangd-mp-20"))
-            (c++-mode . ("/opt/local/bin/clangd-mp-20"))))
-         
-         ;; Linux 设置
-         ((eq system-type 'gnu/linux)
-  	'((c-mode . ("/usr/bin/clangd"))
-            (c++-mode . ("/usr/bin/clangd"))))
-         
-         ;; 默认 fallback 设置（如 Windows 或未知平台）
-         (t
-  	'((c-mode . ("clangd"))
-            (c++-mode . ("clangd"))))))
+  ;; 自动显示 diagnostic 信息（如 tooltip）
+  (add-hook 'post-command-hook #'flymake-show-diagnostic-if-needed)
+
+  (defun flymake-show-diagnostic-if-needed ()
+    "在 minibuffer 中显示当前光标下的诊断信息。"
+    (when-let ((diags (flymake-diagnostics (point) (point))))
+      (message "%s"
+               (mapconcat (lambda (diag)
+                            (flymake-diagnostic-text diag))
+                          diags "\n"))))
   
 #+end_src
 
