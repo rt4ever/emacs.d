@@ -426,6 +426,29 @@ information about each item.
     :config
     (setq flycheck-checker (default-value 'flycheck-checkers)))
 
+  (use-package flycheck-eglot
+    :ensure t
+    :after (flycheck eglot)
+    :config
+    (global-flycheck-eglot-mode 1))
+
+  (setq eglot-server-programs
+        (cond
+         ;; macOS 设置 (使用 MacPorts 安装的 clangd)
+         ((eq system-type 'darwin)
+  	'((c-mode . ("/opt/local/bin/clangd-mp-20"))
+            (c++-mode . ("/opt/local/bin/clangd-mp-20"))))
+         
+         ;; Linux 设置
+         ((eq system-type 'gnu/linux)
+  	'((c-mode . ("/usr/bin/clangd"))
+            (c++-mode . ("/usr/bin/clangd"))))
+         
+         ;; 默认 fallback 设置（如 Windows 或未知平台）
+         (t
+  	'((c-mode . ("clangd"))
+            (c++-mode . ("clangd"))))))
+  
 #+end_src
 
 * Keymap
