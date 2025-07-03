@@ -258,12 +258,12 @@ information about each item.
 
   (if (display-graphic-p)
       (progn
-	(scroll-bar-mode -1)        ; Disable visible scrollbar
-	(tool-bar-mode -1)          ; Disable the toolbar
-	(tooltip-mode -1)           ; Disable tooltips
-	(set-fringe-mode 10)        ; Give some breathing room
-	(menu-bar-mode -1)            ; Disable the menu bar
-	))
+        (scroll-bar-mode -1)        ; Disable visible scrollbar
+        (tool-bar-mode -1)          ; Disable the toolbar
+        (tooltip-mode -1)           ; Disable tooltips
+        (set-fringe-mode 10)        ; Give some breathing room
+        (menu-bar-mode -1)            ; Disable the menu bar
+        ))
 
   ;; Set up the visible bell
   (setq visible-bell t)
@@ -283,34 +283,39 @@ information about each item.
   (defvar my/default-variable-font-size 160)
   (if (display-graphic-p)
       (progn
-	;; Set the fixed pitch face
-	(set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height my/default-font-size)
-	(set-face-attribute 'default nil :font "JetBrains Mono" :height my/default-font-size)
-	(set-face-attribute 'variable-pitch nil :font "Source Sans Pro" :height my/default-font-size :weight 'regular)
-	   ))
+        ;; Set the fixed pitch face
+        (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height my/default-font-size)
+        (set-face-attribute 'default nil :font "JetBrains Mono" :height my/default-font-size)
+        (set-face-attribute 'variable-pitch nil :font "Source Sans Pro" :height my/default-font-size :weight 'regular)
+        ))
 
   (use-package unicode-fonts
-    :straight t)
-    (require 'unicode-fonts)
+     :straight t)
+  (require 'unicode-fonts)
   (unicode-fonts-setup)
   (cond
    ((eq system-type 'darwin)
     (setq initial-frame-alist '((top . 10)
-				(left . 60)
-				   (width . 85)
-				   (height . 50))))
+  			      (left . 60)
+  			      (width . 85)
+  			      (height . 50))))
    ((eq system-type 'windows-nt)
     (setq initial-frame-alist '((top . 10)
-				(left . 10)
-				(width . 100)
-				   (height . 45))))
+  			      (left . 10)
+  			      (width . 100)
+  			      (height . 45))))
    (t
     (message "for other system")))
 
   (use-package doom-themes
+    :straight t)
+  ;;   :config
+  ;;   (load-theme 'doom-gruvbox t))
+
+  (use-package zenburn-theme
     :straight t
     :config
-    (load-theme 'doom-gruvbox t))
+    (load-theme 'zenburn t))
 
   (use-package dimmer
     :straight t)
@@ -375,30 +380,27 @@ information about each item.
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
-  (add-hook 'python-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
   (use-package rust-mode
     :straight t)
+
   (add-hook 'rust-mode-hook 'eglot-ensure)
+
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure)
 
-  (setq eglot-server-programs
-      (cond
-       ;; macOS 设置 (使用 MacPorts 安装的 clangd)
-       ((eq system-type 'darwin)
-        '((c-mode . ("/opt/local/bin/clangd-mp-20"))
-          (c++-mode . ("/opt/local/bin/clangd-mp-20"))))
+  (add-hook 'python-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
 
-       ;; Linux 设置
-       ((eq system-type 'gnu/linux)
-        '((c-mode . ("/usr/bin/clangd"))
-          (c++-mode . ("/usr/bin/clangd"))))
-
-       ;; 默认 fallback 设置（如 Windows 或未知平台）
-       (t
-        '((c-mode . ("clangd"))
-          (c++-mode . ("clangd"))))))
+  ;; 定义 clangd 路径按系统类型
+  (let ((clangd-path
+         (cond
+          ((eq system-type 'darwin) "/opt/local/bin/clangd-mp-20")
+          ((eq system-type 'gnu/linux) "/usr/bin/clangd")
+          (t "clangd"))))
+    
+    ;; 覆盖或追加 c-mode
+    (add-to-list 'eglot-server-programs `(c-mode . (,clangd-path)))
+    (add-to-list 'eglot-server-programs `(c++-mode . (,clangd-path))))
 
 #+end_src
 
