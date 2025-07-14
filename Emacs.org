@@ -290,20 +290,20 @@ information about each item.
         ))
 
   (use-package unicode-fonts
-     :straight t)
+    :straight t)
   (require 'unicode-fonts)
   (unicode-fonts-setup)
   (cond
    ((eq system-type 'darwin)
     (setq initial-frame-alist '((top . 10)
-  			      (left . 60)
-  			      (width . 85)
-  			      (height . 50))))
+    			      (left . 60)
+    			      (width . 85)
+    			      (height . 50))))
    ((eq system-type 'windows-nt)
     (setq initial-frame-alist '((top . 10)
-  			      (left . 10)
-  			      (width . 100)
-  			      (height . 45))))
+    			      (left . 10)
+    			      (width . 100)
+    			      (height . 45))))
    (t
     (message "for other system")))
 
@@ -316,6 +316,7 @@ information about each item.
     :straight t
     :config
     (load-theme 'zenburn t))
+  ;;    (load-theme 'doom-solarized-dark t))
 
   (use-package dimmer
     :straight t)
@@ -384,24 +385,29 @@ information about each item.
     :straight t)
 
   (add-hook 'rust-mode-hook 'eglot-ensure)
-
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure)
 
+
+  (with-eval-after-load 'eglot 
+    (cond
+     ;; macOS 设置 (使用 MacPorts 安装的 clangd)
+     ((eq system-type 'darwin)
+      (add-to-list 'eglot-server-programs '(c-mode . ("/opt/local/bin/clangd-mp-20")))
+      (add-to-list 'eglot-server-programs '(c++-mode . ("/opt/local/bin/clangd-mp-20"))))
+     
+     ;; Linux 设置
+     ((eq system-type 'gnu/linux)
+      (add-to-list 'eglot-server-programs '(c-mode . ("/usr/bin/clangd")))
+      (add-to-list 'eglot-server-programs '(c++-mode . ("/usr/bin/clangd"))))
+     
+     ;; 默认 fallback 设置（如 Windows 或未知平台）
+     (t
+      (add-to-list 'eglot-server-programs '(c-mode . ("/usr/bin/clangd")))
+      (add-to-list 'eglot-server-programs '(c++-mode . ("/usr/bin/clangd")))))) 
+
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
-
-  ;; 定义 clangd 路径按系统类型
-  (let ((clangd-path
-         (cond
-          ((eq system-type 'darwin) "/opt/local/bin/clangd-mp-20")
-          ((eq system-type 'gnu/linux) "/usr/bin/clangd")
-          (t "clangd"))))
-    
-    ;; 覆盖或追加 c-mode
-    (add-to-list 'eglot-server-programs `(c-mode . (,clangd-path)))
-    (add-to-list 'eglot-server-programs `(c++-mode . (,clangd-path))))
-
 #+end_src
 
 ** Linter
