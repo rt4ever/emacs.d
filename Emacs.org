@@ -296,27 +296,39 @@ information about each item.
   (cond
    ((eq system-type 'darwin)
     (setq initial-frame-alist '((top . 10)
-    			      (left . 60)
-    			      (width . 85)
-    			      (height . 50))))
+      			      (left . 60)
+      			      (width . 85)
+      			      (height . 50))))
    ((eq system-type 'windows-nt)
     (setq initial-frame-alist '((top . 10)
-    			      (left . 10)
-    			      (width . 100)
-    			      (height . 45))))
-   (t
-    (message "for other system")))
+      			      (left . 10)
+      			      (width . 100)
+      			      (height . 45))))
+     (t
+      (message "for other system")))
 
   (use-package doom-themes
-    :straight t)
-  ;;   :config
-  ;;   (load-theme 'doom-gruvbox t))
-
-  (use-package zenburn-theme
     :straight t
     :config
-    (load-theme 'zenburn t))
-  ;;    (load-theme 'doom-solarized-dark t))
+    ;;   (load-theme 'doom-gruvbox t))
+    (load-theme 'doom-solarized-dark t))
+
+  ;; 基础 tree-sitter 配置
+  (use-package tree-sitter
+    :straight t
+    :hook ((c-mode          . tree-sitter-mode)
+           (c++-mode        . tree-sitter-mode)
+           (python-mode     . tree-sitter-mode)
+           (rust-mode       . tree-sitter-mode)
+           (cmake-mode      . tree-sitter-mode)
+           (makefile-mode   . tree-sitter-mode))
+    :config
+    (global-tree-sitter-mode))
+
+  ;; 自动安装常见语言 parser
+  (use-package tree-sitter-langs
+    :straight t
+    :after tree-sitter)
 
   (use-package dimmer
     :straight t)
