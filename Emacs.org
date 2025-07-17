@@ -308,10 +308,15 @@ information about each item.
     (message "for other system")))
 
   (use-package doom-themes
+    :straight t)
+    ;;:config
+    ;;   (load-theme 'doom-gruvbox t))
+    ;;(load-theme 'doom-one t))
+  (use-package ef-themes
     :straight t
     :config
-    ;;   (load-theme 'doom-gruvbox t))
-    (load-theme 'doom-solarized-dark t))
+    (load-theme 'ef-dark t))
+   
 
   (use-package dimmer
     :straight t)
