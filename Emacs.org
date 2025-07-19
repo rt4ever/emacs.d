@@ -315,23 +315,14 @@ information about each item.
   (dimmer-mode t)
 
   (use-package diff-hl
-      :straight t)
+    :straight t)
   (global-diff-hl-mode)
 
   (use-package tree-sitter
-    :straight t
-    :hook ((prog-mode . tree-sitter-mode)
-           (tree-sitter-after-on . tree-sitter-hl-mode)))
+    :straight t)
 
-  (use-package tree-sitter-langs
-      :straight t)
-
-  (add-hook 'c-mode-hook #'tree-sitter-mode)
-  (add-hook 'c-mode-hook #'tree-sitter-hl-mode)
-  (add-hook 'c++-mode-hook #'tree-sitter-mode)
-  (add-hook 'c++-mode-hook #'tree-sitter-hl-mode)
-  (add-hook 'python-mode-hook #'tree-sitter-hl-mode)
-
+  (setq treesit-extra-load-path '("~/.emacs.d/tree-sitter/"))
+  
 #+end_src
 
 *** Theme
@@ -404,30 +395,39 @@ information about each item.
   (use-package rust-mode
     :straight t)
 
-  (add-hook 'rust-mode-hook 'eglot-ensure)
-  (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'eglot-ensure)
-
+  (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-ts-mode))
 
   (with-eval-after-load 'eglot 
     (cond
      ;; macOS 设置 (使用 MacPorts 安装的 clangd)
      ((eq system-type 'darwin)
-      (add-to-list 'eglot-server-programs '(c-mode . ("/opt/local/bin/clangd-mp-20")))
-      (add-to-list 'eglot-server-programs '(c++-mode . ("/opt/local/bin/clangd-mp-20"))))
+      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/opt/local/bin/clangd-mp-20")))
+      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/opt/local/bin/clangd-mp-20"))))
      
      ;; Linux 设置
      ((eq system-type 'gnu/linux)
-      (add-to-list 'eglot-server-programs '(c-mode . ("/usr/bin/clangd")))
-      (add-to-list 'eglot-server-programs '(c++-mode . ("/usr/bin/clangd"))))
+      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/usr/bin/clangd")))
+      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/usr/bin/clangd"))))
      
      ;; 默认 fallback 设置（如 Windows 或未知平台）
      (t
-      (add-to-list 'eglot-server-programs '(c-mode . ("/usr/bin/clangd")))
-      (add-to-list 'eglot-server-programs '(c++-mode . ("/usr/bin/clangd")))))) 
+      (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
+      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
 
-  (add-hook 'python-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
+  (add-to-list 'eglot-server-programs '(python-ts-mode . ("pylsp")))
+
+  (setq major-mode-remap-alist
+        '((python-mode . python-ts-mode)
+  	(c-mode . c-ts-mode)
+  	(c++-mode . c++-ts-mode)
+  	(rust-mode . rust-ts-mode)
+  	(cmake-mode . cmake-ts-mode)
+  	))
+  ;; hook ts-mode to eglot
+  (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode rust-ts-mode))
+      (add-hook (intern (concat (symbol-name mode) "-hook"))
+  	                  #'eglot-ensure))
 #+end_src
 
 ** Linter
@@ -455,6 +455,7 @@ information about each item.
                           diags "\n"))))
   
 #+end_src
+
 
 * Keymap
 ** Evil Mode
