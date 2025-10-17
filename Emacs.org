@@ -527,6 +527,59 @@ your currently entered incomplete command (a prefix) in a popup.
 #+end_src
 
 
+* Markdown Mode
+** Basic configuration
+#+begin_src emacs-lisp
+  ;; basic syntax highlight
+  (use-package markdown-mode
+    :straight t
+    :mode ("\\.md\\'" . markdown-mode)
+    :config
+    (setq markdown-fontify-code-blocks-natively t)
+    (setq markdown-command "pandoc"))
+
+  ;; render the markdown file
+  (use-package grip-mode
+    :straight t
+    :hook (markdown-mode . grip-mode)
+    :config
+    (setq grip-update-after-change nil))
+
+  ;; 自动识别 vault
+  ;; 双向链接补全（[[link]]）
+  ;; 快速新建笔记
+  ;; 反向链接查看
+  ;; 支持 dired 中的 vault 导航
+  (use-package obsidian
+    :straight t
+    :demand t
+    :config
+    (setq obsidian-directory "~/Documents/Obsidian/")
+    (global-obsidian-mode t)
+    (setq obsidian-inbox-directory "00_Inbox")
+    (setq obsidian-completion-trigger "[[")
+
+    ;; 如果你想在保存时自动格式化 Markdown，可以手动挂钩 markdown-mode：
+    (add-hook 'markdown-mode-hook
+              (lambda ()
+                (add-hook 'before-save-hook #'obsidian-format-buffer nil t)))
+    
+    )
+#+end_src
+
+** Search Inhance
+#+begin_src emacs-lisp
+  (use-package consult
+    :straight t)
+
+  (use-package consult-ripgrep
+    :straight t)
+
+  (global-set-key (kbd "C-c s") 'consult-ripgrep)
+
+
+#+end_src
+
 * Org Mode
 ** Format Org File
 #+begin_src emacs-lisp
