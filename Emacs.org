@@ -594,13 +594,6 @@ your currently entered incomplete command (a prefix) in a popup.
     )
 #+end_src
 
-** Search Inhance
-#+begin_src emacs-lisp
-  (use-package consult
-    :straight t)
-
-#+end_src
-
 
 * Org Mode
 ** Format Org File
