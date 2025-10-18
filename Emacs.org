@@ -113,6 +113,7 @@ easier than finding and setting these variables yourself.
 #+end_src
 
 ** Ivy & Counsel
+***Obsolted***
 Ivy is an excellent completion framework for Emacs. It provides a minimal yet
 powerful selection menu that appears when you open files, switch buffers, and
 for many other tasks in Emacs. Counsel is a customized set of commands to
@@ -123,74 +124,127 @@ ivy-rich adds extra columns to a few of the Counsel commands to provide more
 information about each item.
 
 #+begin_src emacs-lisp
-  (use-package ivy
-    :straight t
-    :bind (
-	   ("C-s" . swiper)
-	   :map ivy-minibuffer-map
-	   ("TAB" . ivy-alt-done)
-	   ("C-l" . ivy-alt-done)
-	   ("C-j" . ivy-next-line)
-	   ("C-k" . ivy-previous-line)
-	   :map ivy-switch-buffer-map
-	   ("C-k" . ivy-previous-line)
-	   ("C-l" . ivy-done)
-	   ("C-d" . ivy-switch-buffer-kill)
-	   :map ivy-reverse-i-search-map
-	   ("C-k" . ivy-previous-line)
-	   ("C-d" . ivy-reverse-i-search-kill))
-    :config
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-wrap t)
-    (setq ivy-count-format "(%d/%d) ")
-    (setq enable-recursive-minibuffers t)
+  ;; (use-package ivy
+  ;;   :straight t
+  ;;   :bind (
+  ;; 	   ("C-s" . swiper)
+  ;; 	   :map ivy-minibuffer-map
+  ;; 	   ("TAB" . ivy-alt-done)
+  ;; 	   ("C-l" . ivy-alt-done)
+  ;; 	   ("C-j" . ivy-next-line)
+  ;; 	   ("C-k" . ivy-previous-line)
+  ;; 	   :map ivy-switch-buffer-map
+  ;; 	   ("C-k" . ivy-previous-line)
+  ;; 	   ("C-l" . ivy-done)
+  ;; 	   ("C-d" . ivy-switch-buffer-kill)
+  ;; 	   :map ivy-reverse-i-search-map
+  ;; 	   ("C-k" . ivy-previous-line)
+  ;; 	   ("C-d" . ivy-reverse-i-search-kill))
+  ;;   :config
+  ;;   (setq ivy-use-virtual-buffers t)
+  ;;   (setq ivy-wrap t)
+  ;;   (setq ivy-count-format "(%d/%d) ")
+  ;;   (setq enable-recursive-minibuffers t)
 
-    (setq ivy-initial-inputs-alist nil)
+  ;;   (setq ivy-initial-inputs-alist nil)
 
-    ;; Use different regex strategies per completion command
-    ;; (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist)
-    (push '(swiper . ivy--regex-ignore-order) ivy-re-builders-alist)
-    (push '(counsel-M-x . ivy--regex-ignore-order) ivy-re-builders-alist)
+  ;;   ;; Use different regex strategies per completion command
+  ;;   ;; (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist)
+  ;;   (push '(swiper . ivy--regex-ignore-order) ivy-re-builders-alist)
+  ;;   (push '(counsel-M-x . ivy--regex-ignore-order) ivy-re-builders-alist)
 
-    ;; Set minibuffer height for different commands
-    (setf (alist-get 'counsel-projectile-ag ivy-height-alist) 15)
-    (setf (alist-get 'counsel-projectile-rg ivy-height-alist) 15)
-    (setf (alist-get 'swiper ivy-height-alist) 15)
-    (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7)
+  ;;   ;; Set minibuffer height for different commands
+  ;;   (setf (alist-get 'counsel-projectile-ag ivy-height-alist) 15)
+  ;;   (setf (alist-get 'counsel-projectile-rg ivy-height-alist) 15)
+  ;;   (setf (alist-get 'swiper ivy-height-alist) 15)
+  ;;   (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7)
 
-    (ivy-mode 1))
+  ;;   (ivy-mode 1))
 
-  (use-package counsel
-    :straight t
-    :bind (("M-x" . counsel-M-x)
-	   ("C-x b" . counsel-switch-buffer)
-	   ("C-M-j" . 'counsel-switch-buffer)
-	   ("C-x C-b" . counsel-ibuffer)
-	   ("M-y" . counsel-yank-pop)
-	   ("C-x C-r" . counsel-recentf)
-	   ("C-x C-f" . counsel-find-file)
-	   :map minibuffer-local-map
-	   ("C-r" . 'counsel-minibuffer-history))
-    ;;:custom
-    ;;(counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-    :config
-    (counsel-mode 1))
+  ;; (use-package counsel
+  ;;   :straight t
+  ;;   :bind (("M-x" . counsel-M-x)
+  ;; 	   ("C-x b" . counsel-switch-buffer)
+  ;; 	   ("C-M-j" . 'counsel-switch-buffer)
+  ;; 	   ("C-x C-b" . counsel-ibuffer)
+  ;; 	   ("M-y" . counsel-yank-pop)
+  ;; 	   ("C-x C-r" . counsel-recentf)
+  ;; 	   ("C-x C-f" . counsel-find-file)
+  ;; 	   :map minibuffer-local-map
+  ;; 	   ("C-r" . 'counsel-minibuffer-history))
+  ;;   ;;:custom
+  ;;   ;;(counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  ;;   :config
+  ;;   (counsel-mode 1))
 
-  (use-package ivy-prescient
-    :straight t
-  :after counsel
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  :config
-  ;; Uncomment the following line to have sorting remembered across sessions!
-  (prescient-persist-mode 1)
-  (ivy-prescient-mode 1))
+  ;; (use-package ivy-prescient
+  ;;   :straight t
+  ;; :after counsel
+  ;; :custom
+  ;; (ivy-prescient-enable-filtering nil)
+  ;; :config
+  ;; ;; Uncomment the following line to have sorting remembered across sessions!
+  ;; (prescient-persist-mode 1)
+  ;; (ivy-prescient-mode 1))
 
-  (use-package smex ;; adds M-x recent commmand sorting for counsel-M-x
-    :straight t
-    :after counsel)
+  ;; (use-package smex ;; adds M-x recent commmand sorting for counsel-M-x
+  ;;   :straight t
+  ;;   :after counsel)
+
 #+end_src
 
+** Consult & Vertico
+#+begin_src emacs-lisp
+    ;; basic completion frame work
+    (use-package vertico
+      :straight t
+      :init (vertico-mode))
+
+  ;; math frame
+  ;; Emacs Corfu (Completion Overlay Region FU) 是一个用于 Emacs 的补全框架，
+  ;; 它提供了一种新的用户界面来显示补全候选项。Corfu 是 Emacs的一个外部包，
+  ;; 它致力于提供一种直观且高效的补全体验。以下是一些 Corfu 的主要特性和功能：
+
+  (use-package corfu
+    :straight t
+    :custom
+    (corfu-auto t)
+    (corfu-cycle t)
+    :hook ((prog-mode . corfu-mode))
+    :bind
+    (:map corfu-map
+  	("TAB" . corfu-next)
+  	([tab] . corfu-next)
+  	("S-TAB" . corfu-previous)
+  	([backtab] . corfu-previous))
+    :init
+    (global-corfu-mode))
+
+  ;; Optionally use the `orderless' completion style.
+  (use-package orderless
+    :custom
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (orderless-style-dispatchers '(+orderless-dispatch))
+    ;; (orderless-component-separator #'orderless-escapable-split-on-space)
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+
+  ;; search engine
+  (use-package consult
+    :straight t
+    :bind (("C-s" . consult-line)
+  	 ("C-c s" . consult-ripgrep)
+  	 ("M-y" . consult-yank-pop)
+  	 ("C-x b" . consult-buffer)
+  	 ("M-x" . consult-mode-command)))
+
+  ;; provide context sensitive action
+  (use-package embark
+    :straight t
+    :bind (("C-." . embark-act)))
+
+#+end_src
 ** Projectile
 #+begin_src emacs-lisp
   (use-package projectile
@@ -359,37 +413,7 @@ information about each item.
 #+begin_src emacs-lisp
   (require 'eglot)
   (setq eldoc-echo-area-use-multiline-p nil)
-
-  ;; Emacs Corfu (Completion Overlay Region FU) 是一个用于 Emacs 的补全框架，
-  ;; 它提供了一种新的用户界面来显示补全候选项。Corfu 是 Emacs的一个外部包，
-  ;; 它致力于提供一种直观且高效的补全体验。以下是一些 Corfu 的主要特性和功能：
-
-  (use-package corfu
-    :straight t
-    :custom
-    (corfu-auto t)
-    (corfu-cycle t)
-    :hook ((prog-mode . corfu-mode))
-    :bind
-    (:map corfu-map
-	  ("TAB" . corfu-next)
-	  ([tab] . corfu-next)
-	  ("S-TAB" . corfu-previous)
-	  ([backtab] . corfu-previous))
-    :init
-    (global-corfu-mode))
-
-  ;; Optionally use the `orderless' completion style.
-  (use-package orderless
-    :custom
-    ;; Configure a custom style dispatcher (see the Consult wiki)
-    ;; (orderless-style-dispatchers '(+orderless-dispatch))
-    ;; (orderless-component-separator #'orderless-escapable-split-on-space)
-    (completion-styles '(orderless basic))
-    (completion-category-defaults nil)
-    (completion-category-overrides '((file (styles partial-completion)))))
-
-#+end_src
+  #+end_src
 ** LSP
 #+begin_src emacs-lisp
   (use-package rust-mode
@@ -554,11 +578,14 @@ your currently entered incomplete command (a prefix) in a popup.
     :straight t
     :demand t
     :config
-    (setq obsidian-directory "~/Documents/Obsidian/")
+    (if (eq system-type 'darwin)
+        (setq obsidian-directory "~/Documents/Obsidian/")
+      (setq obsidian-directory (concat (getenv "USERPROFILE") "\\Documents\\Obsidian_ParaVault")))
+    
     (global-obsidian-mode t)
     (setq obsidian-inbox-directory "00_Inbox")
     (setq obsidian-completion-trigger "[[")
-
+    
     ;; 如果你想在保存时自动格式化 Markdown，可以手动挂钩 markdown-mode：
     (add-hook 'markdown-mode-hook
               (lambda ()
@@ -572,13 +599,8 @@ your currently entered incomplete command (a prefix) in a popup.
   (use-package consult
     :straight t)
 
-  (use-package consult-ripgrep
-    :straight t)
-
-  (global-set-key (kbd "C-c s") 'consult-ripgrep)
-
-
 #+end_src
+
 
 * Org Mode
 ** Format Org File

@@ -4,5 +4,7 @@ init.el~
 elpa/
 var/
 etc/
-
+straight/
+org-persist/
+tree-sitter/
 eln-cache
