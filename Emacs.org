@@ -195,10 +195,10 @@ information about each item.
 
 ** Consult & Vertico
 #+begin_src emacs-lisp
-    ;; basic completion frame work
-    (use-package vertico
-      :straight t
-      :init (vertico-mode))
+  ;; basic completion frame work
+  (use-package vertico
+    :straight t
+    :init (vertico-mode))
 
   ;; math frame
   ;; Emacs Corfu (Completion Overlay Region FU) 是一个用于 Emacs 的补全框架，
@@ -213,10 +213,10 @@ information about each item.
     :hook ((prog-mode . corfu-mode))
     :bind
     (:map corfu-map
-  	("TAB" . corfu-next)
-  	([tab] . corfu-next)
-  	("S-TAB" . corfu-previous)
-  	([backtab] . corfu-previous))
+    	("TAB" . corfu-next)
+    	([tab] . corfu-next)
+    	("S-TAB" . corfu-previous)
+    	([backtab] . corfu-previous))
     :init
     (global-corfu-mode))
 
@@ -234,16 +234,20 @@ information about each item.
   (use-package consult
     :straight t
     :bind (("C-s" . consult-line)
-  	 ("C-c s" . consult-ripgrep)
-  	 ("M-y" . consult-yank-pop)
-  	 ("C-x b" . consult-buffer)
-  	 ("M-x" . consult-mode-command)))
+    	 ("C-c s" . consult-ripgrep)
+    	 ("M-y" . consult-yank-pop)
+    	 ("C-x b" . consult-buffer)))
 
   ;; provide context sensitive action
   (use-package embark
     :straight t
     :bind (("C-." . embark-act)))
 
+  ;; 可选：增强 minibuffer 显示
+  (use-package marginalia
+    :ensure t
+    :init
+    (marginalia-mode 1))
 #+end_src
 ** Projectile
 #+begin_src emacs-lisp
