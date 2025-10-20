@@ -439,7 +439,11 @@ information about each item.
       (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
       (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
 
-  (add-to-list 'eglot-server-programs '(python-ts-mode . ("pylsp")))
+  ;; (add-to-list 'eglot-server-programs '(python-ts-mode . ("pylsp")))
+
+  (add-to-list 'eglot-server-programs
+             '(python-ts-mode . ("pyright-langserver" "--stdio")))
+
 
   (setq major-mode-remap-alist
         '((python-mode . python-ts-mode)
