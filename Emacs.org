@@ -385,16 +385,16 @@ information about each item.
 
 *** Theme
 #+begin_src emacs-lisp
-  
+
   (use-package doom-themes
-    :straight t)
-  ;;:config
-  ;;   (load-theme 'doom-gruvbox t))
-  ;;(load-theme 'doom-one t))
-  (use-package ef-themes
     :straight t
     :config
-    (load-theme 'ef-dark t))
+    (load-theme 'doom-gruvbox t))
+  ;; (load-theme 'doom-one t))
+  ;; (use-package ef-themes
+  ;;  :straight t
+  ;;  :config
+  ;;  (load-theme 'ef-dark t))
 
 #+end_src
 
@@ -448,18 +448,32 @@ information about each item.
   (add-to-list 'eglot-server-programs
              '(python-ts-mode . ("pyright-langserver" "--stdio")))
 
+  (use-package direnv
+    :straight t
+    :config
+    (direnv-mode))
 
   (setq major-mode-remap-alist
         '((python-mode . python-ts-mode)
   	(c-mode . c-ts-mode)
   	(c++-mode . c++-ts-mode)
-  	(rust-mode . rust-ts-mode)
   	(cmake-mode . cmake-ts-mode)
   	))
   ;; hook ts-mode to eglot
-  (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode rust-ts-mode))
+  (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode))
       (add-hook (intern (concat (symbol-name mode) "-hook"))
   	                  #'eglot-ensure))
+
+  (use-package rustic
+  :straight t
+  :bind (:map rustic-mode-map
+         ("C-c C-c C-c" . rustic-cargo-run)
+         ("C-c C-c C-t" . rustic-cargo-test)
+         ("C-c C-c C-k" . rustic-cargo-check)
+         ("C-c C-c C-l" . rustic-cargo-clippy)
+         ("C-c C-c C-f" . rustic-format-buffer))
+  :config
+  (setq rustic-lsp-client 'eglot))
 #+end_src
 
 ** Linter
