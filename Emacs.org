@@ -451,11 +451,6 @@ information about each item.
   (add-to-list 'eglot-server-programs
              '(python-ts-mode . ("pyright-langserver" "--stdio")))
 
-  (use-package direnv
-    :straight t
-    :config
-    (direnv-mode))
-
   (setq major-mode-remap-alist
         '((python-mode . python-ts-mode)
   	(c-mode . c-ts-mode)
