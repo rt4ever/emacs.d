@@ -1,0 +1,10 @@
+init.el
+init.el~
+.last-package-update-day
+elpa/
+var/
+etc/
+straight/
+org-persist/
+tree-sitter/
+eln-cache
