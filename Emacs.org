@@ -596,24 +596,24 @@ your currently entered incomplete command (a prefix) in a popup.
   ;; 快速新建笔记
   ;; 反向链接查看
   ;; 支持 dired 中的 vault 导航
-  (use-package obsidian
-    :straight t
-    :demand t
-    :config
-    (if (eq system-type 'darwin)
-        (setq obsidian-directory "~/Documents/Obsidian/")
-      (setq obsidian-directory (concat (getenv "USERPROFILE") "\\Documents\\Obsidian_ParaVault")))
+  ;; (use-package obsidian
+  ;;   :straight t
+  ;;   :demand t
+  ;;   :config
+  ;;   (if (eq system-type 'darwin)
+  ;;       (setq obsidian-directory "~/Documents/Obsidian/")
+  ;;     (setq obsidian-directory (concat (getenv "USERPROFILE") "\\Documents\\Obsidian_ParaVault")))
     
-    (global-obsidian-mode t)
-    (setq obsidian-inbox-directory "00_Inbox")
-    (setq obsidian-completion-trigger "[[")
-    
-    ;; 如果你想在保存时自动格式化 Markdown，可以手动挂钩 markdown-mode：
-    (add-hook 'markdown-mode-hook
+  ;;   (global-obsidian-mode t)
+  ;;   (setq obsidian-inbox-directory "00_Inbox")
+  ;;   (setq obsidian-completion-trigger "[[")
+
+  ;; 如果你想在保存时自动格式化 Markdown，可以手动挂钩 markdown-mode：
+  (add-hook 'markdown-mode-hook
               (lambda ()
                 (add-hook 'before-save-hook #'obsidian-format-buffer nil t)))
-    
-    )
+
+  )
 #+end_src
 
 
