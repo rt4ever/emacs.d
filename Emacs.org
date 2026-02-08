@@ -393,12 +393,17 @@ information about each item.
 
   ;; (load-theme 'doom-one t))
 
-  ;; (use-package ef-themes
-  ;;  :straight t
-  ;;  :config
-  ;;  (load-theme 'ef-dark t))
+  (use-package ef-themes
+    :straight t
+    :config
+    (load-theme 'ef-dark t))
 
-  (load-theme 'modus-vivendi-tinted t)
+  ;;(load-theme 'modus-vivendi-tinted t)
+
+  (unless (display-graphic-p)
+    (set-face-background 'default "unspecified-bg" nil)
+    (set-face-background 'region "unspecified-bg" nil))
+
 #+end_src
 
 
