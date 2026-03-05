@@ -112,113 +112,63 @@ easier than finding and setting these variables yourself.
   (global-set-key (kbd "M-o") 'ace-window)
 #+end_src
 
-** Ivy & Counsel
-***Obsolted***
-Ivy is an excellent completion framework for Emacs. It provides a minimal yet
-powerful selection menu that appears when you open files, switch buffers, and
-for many other tasks in Emacs. Counsel is a customized set of commands to
-replace `find-file` with `counsel-find-file`, etc which provide useful commands
-for each of the default completion commands.
-
-ivy-rich adds extra columns to a few of the Counsel commands to provide more
-information about each item.
-
+** Completion FrameWork
 #+begin_src emacs-lisp
-  (use-package ivy
+
+  ;; Basic completion frame work backend, like server
+  (use-package vertico
     :straight t
-    :bind (
-  	   ("C-s" . swiper)
-  	   :map ivy-minibuffer-map
-  	   ("TAB" . ivy-alt-done)
-  	   ("C-l" . ivy-alt-done)
-  	   ("C-j" . ivy-next-line)
-  	   ("C-k" . ivy-previous-line)
-  	   :map ivy-switch-buffer-map
-  	   ("C-k" . ivy-previous-line)
-  	   ("C-l" . ivy-done)
-  	   ("C-d" . ivy-switch-buffer-kill)
-  	   :map ivy-reverse-i-search-map
-  	   ("C-k" . ivy-previous-line)
-  	   ("C-d" . ivy-reverse-i-search-kill))
+    :init (vertico-mode)
     :config
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-wrap t)
-    (setq ivy-count-format "(%d/%d) ")
-    (setq enable-recursive-minibuffers t)
+    ;; 让 Evil 用户在 minibuffer 里也能用 C-j / C-k 移动
+    (define-key vertico-map (kbd "C-j") 'vertico-next)
+    (define-key vertico-map (kbd "C-k") 'vertico-previous)
+    ;; 配合 Evil 的跳转习惯，进入目录或选中直接回车
+    (define-key vertico-map (kbd "C-l") 'vertico-insert))
 
-    (setq ivy-initial-inputs-alist nil)
-
-    ;; Use different regex strategies per completion command
-    ;; (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist)
-    (push '(swiper . ivy--regex-ignore-order) ivy-re-builders-alist)
-    (push '(counsel-M-x . ivy--regex-ignore-order) ivy-re-builders-alist)
-
-    ;; Set minibuffer height for different commands
-    (setf (alist-get 'counsel-projectile-ag ivy-height-alist) 15)
-    (setf (alist-get 'counsel-projectile-rg ivy-height-alist) 15)
-    (setf (alist-get 'swiper ivy-height-alist) 15)
-    (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7)
-
-    (ivy-mode 1))
-
-  (use-package counsel
+  (use-package consult
     :straight t
-    :bind (("M-x" . counsel-M-x)
-  	   ("C-x b" . counsel-switch-buffer)
-  	   ("C-M-j" . 'counsel-switch-buffer)
-  	   ("C-x C-b" . counsel-ibuffer)
-  	   ("M-y" . counsel-yank-pop)
-  	   ("C-x C-r" . counsel-recentf)
-  	   ("C-x C-f" . counsel-find-file)
-  	   :map minibuffer-local-map
-  	   ("C-r" . 'counsel-minibuffer-history))
-    ;;:custom
-    ;;(counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+    :bind (;; 1. 快速预览当前文件的函数/符号 (代替 imenu)
+           ("M-s i" . consult-imenu)
+           ;; 2. 全局搜索 (配合 ripgrep)，对 U-Boot 这种大工程是刚需
+           ("M-s g" . consult-ripgrep) 
+           ;; 3. 实时预览的行搜索 (代替 Swiper)
+           ("C-s" . consult-line)
+           ;; 4. 项目内快速跳文件
+           ;;("SPC f p" . consult-project-extra-find) ; 需要安装 consult-project-extra
+           ("C-x b" . consult-buffer))
     :config
-    (counsel-mode 1))
+    ;; 优化：针对嵌入式大文件，关闭部分预览以防卡顿，或者设置延迟
+    (setq consult-preview-key 'any) ; 敲击任何键时预览，或者设为 (kbd "M-.")
+    )
 
-  (use-package ivy-prescient
-    :straight t
-  :after counsel
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  :config
-  ;; Uncomment the following line to have sorting remembered across sessions!
-  (prescient-persist-mode 1)
-  (ivy-prescient-mode 1))
 
-  (use-package smex ;; adds M-x recent commmand sorting for counsel-M-x
-    :straight t
-    :after counsel)
-
-#+end_src
-
-** Consult & Vertico
-#+begin_src emacs-lisp
-  ;; basic completion frame work
-  ;; (use-package vertico
-  ;;  :straight t
-  ;;  :init (vertico-mode))
-
-  ;; math frame
   ;; Emacs Corfu (Completion Overlay Region FU) 是一个用于 Emacs 的补全框架，
   ;; 它提供了一种新的用户界面来显示补全候选项。Corfu 是 Emacs的一个外部包，
   ;; 它致力于提供一种直观且高效的补全体验。以下是一些 Corfu 的主要特性和功能：
-
   (use-package corfu
     :straight t
     :custom
     (corfu-auto t)
-    (corfu-cycle t)
-    :hook ((prog-mode . corfu-mode))
-    :bind
-    (:map corfu-map
-    	("TAB" . corfu-next)
-    	([tab] . corfu-next)
-    	("S-TAB" . corfu-previous)
-    	([backtab] . corfu-previous))
+    (corfu-auto-delay 0.1) ; 嵌入式开发需要更快的响应
+    (corfu-auto-prefix 2)
+    (corfu-popupinfo-delay 0.3) ; 悬停显示函数定义/文档
     :init
-    (global-corfu-mode))
+    (global-corfu-mode)
+    (corfu-popupinfo-mode) ; 开启文档悬停预览
+    :config
+    ;; 配合 Evil：回车即选中，Tab 循环
+    (define-key corfu-map (kbd "RET") 'corfu-insert)
+    (define-key corfu-map [return] 'corfu-insert))
+
+  (setq project-vc-extra-root-markers 
+        '(".project"        ; 通用/Eclipse
+          "Makefile"        ; 嵌入式/U-Boot
+          "Kconfig"         ; 内核/U-Boot 配置
+          "CMakeLists.txt"  ; CMake 项目
+          "pyproject.toml"  ; Python 项目 (uv/Poetry/Pytest)
+          "uv.lock"         ; 明确的 uv 项目标识
+          ".git"))          ; 兜底 Git 根目录
 
   ;; Optionally use the `orderless' completion style.
   (use-package orderless
@@ -230,31 +180,14 @@ information about each item.
     (completion-category-defaults nil)
     (completion-category-overrides '((file (styles basic partial-completion)))))
 
-  ;; search engine
-  (use-package consult
+  (use-package cape
     :straight t
-    :bind (("C-s" . consult-line)
-    	 ("C-c s" . consult-ripgrep)
-    	 ("M-y" . consult-yank-pop)
-    	 ("C-x b" . consult-buffer)))
-
-  ;; provide context sensitive action
-  ;; (use-package embark
-  ;;  :straight t
-  ;;  :bind (("C-." . embark-act)))
-
-  ;; 可选：增强 minibuffer 显示
-  (use-package marginalia
-    :ensure t
     :init
-    (marginalia-mode 1))
-#+end_src
-** Projectile
-#+begin_src emacs-lisp
-  (use-package projectile
-    :straight t
-    :config
-    (projectile-mode t))
+    ;; 将常用的补全后端加入到 capf 列表中
+    (add-to-list 'completion-at-point-functions #'cape-file)      ; 文件路径补全
+    (add-to-list 'completion-at-point-functions #'cape-keyword)   ; 编程语言关键字
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)   ; 当前 buffer 已有的词
+    )
 #+end_src
 ** Dashboard
 #+begin_src emacs-lisp
@@ -404,27 +337,22 @@ information about each item.
     (load-theme 'doom-gruvbox t))
   ;; (load-theme 'doom-one t))
   ;; (use-package ef-themes
-  ;;  :straight t
+    ;;  :straight t
   ;;  :config
   ;;  (load-theme 'ef-dark t))
 
+  (use-package kind-icon
+    :straight t
+    :ensure t
+    :after corfu
+    :custom
+    (kind-icon-default-face 'corfu-default) ; 适配主题
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-formatter))
 #+end_src
 
 
 * Programing
-** Company
-#+begin_src emacs-lisp
-  (use-package  company
-    :straight t
-    :config
-    (global-company-mode)
-    (setq company-idle-delay 0.5)
-    )
-  (use-package company-box
-    :straight t
-    :hook
-    (company-mode . company-box-mode))
-#+end_src
 ** Eglot
 #+begin_src emacs-lisp
   (require 'eglot)
@@ -524,46 +452,37 @@ Emacs Lisp.
 #+begin_src emacs-lisp
   (use-package evil
     :straight t
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump nil)
     :config
     (evil-mode 1)
+    
+    ;; 快速退出插入模式
     (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-    ;; Use visual line motions even outside of visual-line-mode buffers
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    ;; 屏蔽掉默认的 C-z 挂起，防止在 tmux 里误触
+    (define-key evil-normal-state-map (kbd "C-z") nil)
+    (define-key evil-motion-state-map (kbd "C-z") nil))
 
-    (define-key evil-motion-state-map " " nil)
 
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
-
-  (use-package evil-nerd-commenter
+  (use-package general
     :straight t
     :config
-    (evilnc-default-hotkeys))
+    (general-evil-setup)
+    ;; 定义你的 Leader Key 逻辑
+    (general-create-definer my/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
 
-  ;; general package will be slow.  use evil-leader first
-  (use-package evil-collection
-    :straight t
-    :after evil
-    :custom
-    (evil-collection-setup-minibuffer t)
-    :config
-    (evil-collection-init))
-
-  (with-eval-after-load 'evil
-    (define-key evil-normal-state-map (kbd "C-z") 'suspend-frame)
-    (define-key evil-insert-state-map (kbd "C-z") 'suspend-frame)
-    (define-key evil-emacs-state-map (kbd "C-z") 'suspend-frame)
-
-    (define-key evil-normal-state-map (kbd "C-M-z") 'evil-emacs-state)
-    (define-key evil-emacs-state-map (kbd "C-M-z") 'evil-exit-emacs-state))
+    (my/leader-keys
+      "s" '(:ignore t :which-key "search")
+      "ss" '(consult-line :which-key "Swiper-like Search")
+      "sp" '(consult-ripgrep :which-key "Ripgrep Project") ; 查找寄存器定义最快
+      "i"  '(consult-imenu :which-key "Jump to Function")  ; 快速找当前文件的函数
+      "ff" '(find-file :which-key "Find File")
+      "bb" '(consult-buffer :which-key "Switch Buffer")
+      "gd" '(xref-find-definitions :which-key "Go to Definition") ; 配合 LSP
+      "gr" '(xref-find-references :which-key "Find References"))
+  )
 #+end_src
 
 ** Which Key 
