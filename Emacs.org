@@ -352,6 +352,68 @@ easier than finding and setting these variables yourself.
 #+end_src
 
 
+* Keymap
+** Evil Mode
+Evil is an extensible vi layer for Emacs. It emulates the main features of Vim,
+turning Emacs into a modal editor. Like Emacs in general, Evil is extensible in
+Emacs Lisp.
+
+#+begin_src emacs-lisp
+  (use-package evil
+    :straight t
+    :config
+    (evil-mode 1)
+    
+    ;; 快速退出插入模式
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+
+    ;; 屏蔽掉默认的 C-z 挂起，防止在 tmux 里误触
+    (define-key evil-normal-state-map (kbd "C-z") nil)
+    (define-key evil-motion-state-map (kbd "C-z") nil))
+
+
+  (use-package general
+    :straight t
+    :config
+    (general-evil-setup)
+    ;; 定义你的 Leader Key 逻辑
+    (general-create-definer my/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+
+    (my/leader-keys
+      "s" '(:ignore t :which-key "search")
+      "ss" '(consult-line :which-key "Swiper-like Search")
+      "sp" '(consult-ripgrep :which-key "Ripgrep Project") ; 查找寄存器定义最快
+      "i"  '(consult-imenu :which-key "Jump to Function")  ; 快速找当前文件的函数
+      "ff" '(find-file :which-key "Find File")
+      "bb" '(consult-buffer :which-key "Switch Buffer")
+      "gd" '(xref-find-definitions :which-key "Go to Definition") ; 配合 LSP
+      "gr" '(xref-find-references :which-key "Find References"))
+  )
+
+#+end_src
+
+** Which Key 
+which-key is a minor mode for Emacs that displays the key bindings following
+your currently entered incomplete command (a prefix) in a popup.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :straight t
+    :config
+    (which-key-mode)  ;; Enable which-key
+    (setq which-key-idle-delay 0.3)  ;; Show keybinding hints after a short delay
+    ;;(setq which-key-popup-type 'side-window)  ;; Display keybindings in a side window (other options: 'mini-window)
+    ;;(setq which-key-side-window-location 'right)  ;; Position the popup on the right side of the screen
+    ;; side-window cause running timer error
+    (setq which-key-max-description-length 30)  ;; Max length for descriptions in the popup
+    (setq which-key-min-display-lines 10)  ;; Show at least 10 lines in the popup
+    (setq which-key-show-early-on-C-h t)  ;; Show keybindings as soon as you press `C-h`
+  )
+#+end_src
+
+
 * Programing
 ** Eglot
 #+begin_src emacs-lisp
@@ -404,6 +466,36 @@ easier than finding and setting these variables yourself.
       (add-hook (intern (concat (symbol-name mode) "-hook"))
   	                  #'eglot-ensure))
 
+  ;; -----------------------
+  ;; LSP 优先
+  ;; -----------------------
+
+  (define-key evil-normal-state-map (kbd "gd") 'xref-find-definitions)
+  (define-key evil-normal-state-map (kbd "gr") 'xref-find-references)
+  (define-key evil-normal-state-map (kbd "gi") 'xref-find-implementations)
+  (define-key evil-normal-state-map (kbd "gt") 'xref-find-type-definitions)
+  (define-key evil-normal-state-map (kbd "gb") 'xref-pop-marker-stack)
+
+  ;; -----------------------
+  ;; ggtags 备用层
+  ;; -----------------------
+
+  (use-package ggtags
+    :hook ((c-mode c++-mode asm-mode) . ggtags-mode))
+
+  (define-prefix-command 'my-gtags-map)
+  (define-key evil-normal-state-map (kbd "gT") 'my-gtags-map)
+
+  (define-key my-gtags-map (kbd "d") 'ggtags-find-definition)
+  (define-key my-gtags-map (kbd "r") 'ggtags-find-reference)
+  (define-key my-gtags-map (kbd "s") 'ggtags-find-symbol)
+(setq ggtags-completing-read-function #'completing-read)
+  ;; -----------------------
+  ;; 文本搜索
+  ;; -----------------------
+
+  (define-key evil-normal-state-map (kbd "gs") 'consult-ripgrep)
+
   (use-package rustic
   :straight t
   :bind (:map rustic-mode-map
@@ -443,65 +535,6 @@ easier than finding and setting these variables yourself.
 #+end_src
 
 
-* Keymap
-** Evil Mode
-Evil is an extensible vi layer for Emacs. It emulates the main features of Vim,
-turning Emacs into a modal editor. Like Emacs in general, Evil is extensible in
-Emacs Lisp.
-
-#+begin_src emacs-lisp
-  (use-package evil
-    :straight t
-    :config
-    (evil-mode 1)
-    
-    ;; 快速退出插入模式
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-
-    ;; 屏蔽掉默认的 C-z 挂起，防止在 tmux 里误触
-    (define-key evil-normal-state-map (kbd "C-z") nil)
-    (define-key evil-motion-state-map (kbd "C-z") nil))
-
-
-  (use-package general
-    :straight t
-    :config
-    (general-evil-setup)
-    ;; 定义你的 Leader Key 逻辑
-    (general-create-definer my/leader-keys
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
-
-    (my/leader-keys
-      "s" '(:ignore t :which-key "search")
-      "ss" '(consult-line :which-key "Swiper-like Search")
-      "sp" '(consult-ripgrep :which-key "Ripgrep Project") ; 查找寄存器定义最快
-      "i"  '(consult-imenu :which-key "Jump to Function")  ; 快速找当前文件的函数
-      "ff" '(find-file :which-key "Find File")
-      "bb" '(consult-buffer :which-key "Switch Buffer")
-      "gd" '(xref-find-definitions :which-key "Go to Definition") ; 配合 LSP
-      "gr" '(xref-find-references :which-key "Find References"))
-  )
-#+end_src
-
-** Which Key 
-which-key is a minor mode for Emacs that displays the key bindings following
-your currently entered incomplete command (a prefix) in a popup.
-#+begin_src emacs-lisp
-  (use-package which-key
-    :straight t
-    :config
-    (which-key-mode)  ;; Enable which-key
-    (setq which-key-idle-delay 0.3)  ;; Show keybinding hints after a short delay
-    ;;(setq which-key-popup-type 'side-window)  ;; Display keybindings in a side window (other options: 'mini-window)
-    ;;(setq which-key-side-window-location 'right)  ;; Position the popup on the right side of the screen
-    ;; side-window cause running timer error
-    (setq which-key-max-description-length 30)  ;; Max length for descriptions in the popup
-    (setq which-key-min-display-lines 10)  ;; Show at least 10 lines in the popup
-    (setq which-key-show-early-on-C-h t)  ;; Show keybindings as soon as you press `C-h`
-  )
-#+end_src
 
 
 * Markdown Mode
@@ -516,4 +549,7 @@ your currently entered incomplete command (a prefix) in a popup.
   (require 'org-tempo)
   (setq-default fill-column 80)
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
+
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'org-mode 'emacs))
 #+end_src
