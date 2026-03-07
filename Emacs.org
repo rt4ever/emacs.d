@@ -84,7 +84,6 @@ easier than finding and setting these variables yourself.
     :config
     (require 'recentf)
     (add-to-list 'recentf-exclude no-littering-var-directory)
-    (add-to-list 'recentf-exclude no-littering-etc-directory)
 
     ;; no-littering doesn't set this by default so we must place
     ;; auto save files in the same path as it uses for sessions
@@ -390,7 +389,9 @@ Emacs Lisp.
       "ff" '(find-file :which-key "Find File")
       "bb" '(consult-buffer :which-key "Switch Buffer")
       "gd" '(xref-find-definitions :which-key "Go to Definition") ; 配合 LSP
-      "gr" '(xref-find-references :which-key "Find References"))
+      "gr" '(xref-find-references :which-key "Find References")
+      "r"  '(recentf :which-key "Recent Files")
+      )
   )
 
 #+end_src
@@ -422,90 +423,90 @@ your currently entered incomplete command (a prefix) in a popup.
   #+end_src
 ** LSP
 #+begin_src emacs-lisp
-  (use-package rust-mode
-    :straight t)
+    (use-package rust-mode
+      :straight t)
 
-  (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-ts-mode))
+    (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
+    (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-ts-mode))
 
-  (with-eval-after-load 'eglot 
-    (cond
-     ;; macOS 设置 (使用 MacPorts 安装的 clangd)
-     ((eq system-type 'darwin)
-      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/opt/local/bin/clangd-mp-20")))
-      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/opt/local/bin/clangd-mp-20"))))
-     
-     ;; Linux 设置
-     ((eq system-type 'gnu/linux)
-      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/usr/bin/clangd")))
-      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/usr/bin/clangd"))))
-     
-     ;; 默认 fallback 设置（如 Windows 或未知平台）
-     (t
-      (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
-      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
+    (with-eval-after-load 'eglot 
+      (cond
+       ;; macOS 设置 (使用 MacPorts 安装的 clangd)
+       ((eq system-type 'darwin)
+        (add-to-list 'eglot-server-programs '(c-ts-mode . ("/opt/local/bin/clangd-mp-20")))
+        (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/opt/local/bin/clangd-mp-20"))))
+       
+       ;; Linux 设置
+       ((eq system-type 'gnu/linux)
+        (add-to-list 'eglot-server-programs '(c-ts-mode . ("/usr/bin/clangd")))
+        (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/usr/bin/clangd"))))
+       
+       ;; 默认 fallback 设置（如 Windows 或未知平台）
+       (t
+        (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
+        (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
 
-  ;; (add-to-list 'eglot-server-programs '(python-ts-mode . ("pylsp")))
+    ;; (add-to-list 'eglot-server-programs '(python-ts-mode . ("pylsp")))
 
-  (add-to-list 'eglot-server-programs
-             '(python-ts-mode . ("pyright-langserver" "--stdio")))
+    (add-to-list 'eglot-server-programs
+               '(python-ts-mode . ("pyright-langserver" "--stdio")))
 
-  ;;(use-package direnv
-  ;;  :straight t
-  ;;  :config
-  ;;  (direnv-mode))
+    ;;(use-package direnv
+    ;;  :straight t
+    ;;  :config
+    ;;  (direnv-mode))
 
-  (setq major-mode-remap-alist
-        '((python-mode . python-ts-mode)
-  	(c-mode . c-ts-mode)
-  	(c++-mode . c++-ts-mode)
-  	(cmake-mode . cmake-ts-mode)
-  	))
-  ;; hook ts-mode to eglot
-  (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode))
-      (add-hook (intern (concat (symbol-name mode) "-hook"))
-  	                  #'eglot-ensure))
+    (setq major-mode-remap-alist
+          '((python-mode . python-ts-mode)
+    	(c-mode . c-ts-mode)
+    	(c++-mode . c++-ts-mode)
+    	(cmake-mode . cmake-ts-mode)
+    	))
+    ;; hook ts-mode to eglot
+    (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode))
+        (add-hook (intern (concat (symbol-name mode) "-hook"))
+    	                  #'eglot-ensure))
 
-  ;; -----------------------
-  ;; LSP 优先
-  ;; -----------------------
+    ;; -----------------------
+    ;; LSP 优先
+    ;; -----------------------
 
-  (define-key evil-normal-state-map (kbd "gd") 'xref-find-definitions)
-  (define-key evil-normal-state-map (kbd "gr") 'xref-find-references)
-  (define-key evil-normal-state-map (kbd "gi") 'xref-find-implementations)
-  (define-key evil-normal-state-map (kbd "gt") 'xref-find-type-definitions)
-  (define-key evil-normal-state-map (kbd "gb") 'xref-pop-marker-stack)
+    (define-key evil-normal-state-map (kbd "gd") 'xref-find-definitions)
+    (define-key evil-normal-state-map (kbd "gr") 'xref-find-references)
+    (define-key evil-normal-state-map (kbd "gi") 'xref-find-implementations)
+    (define-key evil-normal-state-map (kbd "gt") 'xref-find-type-definitions)
+    (define-key evil-normal-state-map (kbd "gb") 'xref-pop-marker-stack)
 
-  ;; -----------------------
-  ;; ggtags 备用层
-  ;; -----------------------
+    ;; -----------------------
+    ;; ggtags 备用层
+    ;; -----------------------
 
-  (use-package ggtags
-    :hook ((c-mode c++-mode asm-mode) . ggtags-mode))
+    (use-package ggtags
+      :hook ((c-ts-mode c++-ts-mode asm-mode) . ggtags-mode))
 
-  (define-prefix-command 'my-gtags-map)
-  (define-key evil-normal-state-map (kbd "gT") 'my-gtags-map)
+    (define-prefix-command 'my-gtags-map)
+    (define-key evil-normal-state-map (kbd "gT") 'my-gtags-map)
 
-  (define-key my-gtags-map (kbd "d") 'ggtags-find-definition)
-  (define-key my-gtags-map (kbd "r") 'ggtags-find-reference)
-  (define-key my-gtags-map (kbd "s") 'ggtags-find-symbol)
-(setq ggtags-completing-read-function #'completing-read)
-  ;; -----------------------
-  ;; 文本搜索
-  ;; -----------------------
+    (define-key my-gtags-map (kbd "d") 'ggtags-find-definition)
+    (define-key my-gtags-map (kbd "r") 'ggtags-find-reference)
+    (define-key my-gtags-map (kbd "s") 'ggtags-find-symbol)
+  (setq ggtags-completing-read-function #'completing-read)
+    ;; -----------------------
+    ;; 文本搜索
+    ;; -----------------------
 
-  (define-key evil-normal-state-map (kbd "gs") 'consult-ripgrep)
+    (define-key evil-normal-state-map (kbd "gs") 'consult-ripgrep)
 
-  (use-package rustic
-  :straight t
-  :bind (:map rustic-mode-map
-         ("C-c C-c C-c" . rustic-cargo-run)
-         ("C-c C-c C-t" . rustic-cargo-test)
-         ("C-c C-c C-k" . rustic-cargo-check)
-         ("C-c C-c C-l" . rustic-cargo-clippy)
-         ("C-c C-c C-f" . rustic-format-buffer))
-  :config
-  (setq rustic-lsp-client 'eglot))
+    (use-package rustic
+    :straight t
+    :bind (:map rustic-mode-map
+           ("C-c C-c C-c" . rustic-cargo-run)
+           ("C-c C-c C-t" . rustic-cargo-test)
+           ("C-c C-c C-k" . rustic-cargo-check)
+           ("C-c C-c C-l" . rustic-cargo-clippy)
+           ("C-c C-c C-f" . rustic-format-buffer))
+    :config
+    (setq rustic-lsp-client 'eglot))
 #+end_src
 
 ** Linter
