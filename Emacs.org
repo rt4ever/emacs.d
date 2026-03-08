@@ -159,6 +159,10 @@ easier than finding and setting these variables yourself.
     ;; 配合 Evil：回车即选中，Tab 循环
     (define-key corfu-map (kbd "RET") 'corfu-insert)
     (define-key corfu-map [return] 'corfu-insert))
+  (with-eval-after-load 'corfu
+    (define-key corfu-map (kbd "C-n") 'corfu-next)
+    (define-key corfu-map (kbd "C-p") 'corfu-previous)
+    (define-key corfu-map [escape] 'corfu-quite))
 
   (setq project-vc-extra-root-markers 
         '(".project"        ; 通用/Eclipse
@@ -351,70 +355,6 @@ easier than finding and setting these variables yourself.
 #+end_src
 
 
-* Keymap
-** Evil Mode
-Evil is an extensible vi layer for Emacs. It emulates the main features of Vim,
-turning Emacs into a modal editor. Like Emacs in general, Evil is extensible in
-Emacs Lisp.
-
-#+begin_src emacs-lisp
-  (use-package evil
-    :straight t
-    :config
-    (evil-mode 1)
-    
-    ;; 快速退出插入模式
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-
-    ;; 屏蔽掉默认的 C-z 挂起，防止在 tmux 里误触
-    (define-key evil-normal-state-map (kbd "C-z") nil)
-    (define-key evil-motion-state-map (kbd "C-z") nil))
-
-
-  (use-package general
-    :straight t
-    :config
-    (general-evil-setup)
-    ;; 定义你的 Leader Key 逻辑
-    (general-create-definer my/leader-keys
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
-
-    (my/leader-keys
-      "s" '(:ignore t :which-key "search")
-      "ss" '(consult-line :which-key "Swiper-like Search")
-      "sp" '(consult-ripgrep :which-key "Ripgrep Project") ; 查找寄存器定义最快
-      "i"  '(consult-imenu :which-key "Jump to Function")  ; 快速找当前文件的函数
-      "ff" '(find-file :which-key "Find File")
-      "bb" '(consult-buffer :which-key "Switch Buffer")
-      "gd" '(xref-find-definitions :which-key "Go to Definition") ; 配合 LSP
-      "gr" '(xref-find-references :which-key "Find References")
-      "r"  '(recentf :which-key "Recent Files")
-      )
-  )
-
-#+end_src
-
-** Which Key 
-which-key is a minor mode for Emacs that displays the key bindings following
-your currently entered incomplete command (a prefix) in a popup.
-#+begin_src emacs-lisp
-  (use-package which-key
-    :straight t
-    :config
-    (which-key-mode)  ;; Enable which-key
-    (setq which-key-idle-delay 0.3)  ;; Show keybinding hints after a short delay
-    ;;(setq which-key-popup-type 'side-window)  ;; Display keybindings in a side window (other options: 'mini-window)
-    ;;(setq which-key-side-window-location 'right)  ;; Position the popup on the right side of the screen
-    ;; side-window cause running timer error
-    (setq which-key-max-description-length 30)  ;; Max length for descriptions in the popup
-    (setq which-key-min-display-lines 10)  ;; Show at least 10 lines in the popup
-    (setq which-key-show-early-on-C-h t)  ;; Show keybindings as soon as you press `C-h`
-  )
-#+end_src
-
-
 * Programing
 ** Eglot
 #+begin_src emacs-lisp
@@ -423,98 +363,52 @@ your currently entered incomplete command (a prefix) in a popup.
   #+end_src
 ** LSP
 #+begin_src emacs-lisp
-    (use-package rust-mode
-      :straight t)
-
-    (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-ts-mode))
-
-    (with-eval-after-load 'eglot 
-      (cond
-       ;; macOS 设置 (使用 MacPorts 安装的 clangd)
-       ((eq system-type 'darwin)
-        (add-to-list 'eglot-server-programs '(c-ts-mode . ("/opt/local/bin/clangd-mp-20")))
-        (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/opt/local/bin/clangd-mp-20"))))
-       
-       ;; Linux 设置
-       ((eq system-type 'gnu/linux)
-        (add-to-list 'eglot-server-programs '(c-ts-mode . ("/usr/bin/clangd")))
-        (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/usr/bin/clangd"))))
-       
-       ;; 默认 fallback 设置（如 Windows 或未知平台）
-       (t
-        (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
-        (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
-
-    ;; (add-to-list 'eglot-server-programs '(python-ts-mode . ("pylsp")))
-
-    (add-to-list 'eglot-server-programs
-               '(python-ts-mode . ("pyright-langserver" "--stdio")))
-
-    ;;(use-package direnv
-    ;;  :straight t
-    ;;  :config
-    ;;  (direnv-mode))
-
-    (setq major-mode-remap-alist
-          '((python-mode . python-ts-mode)
-    	(c-mode . c-ts-mode)
-    	(c++-mode . c++-ts-mode)
-    	(cmake-mode . cmake-ts-mode)
-    	))
-    ;; hook ts-mode to eglot
-    (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode))
-        (add-hook (intern (concat (symbol-name mode) "-hook"))
-    	                  #'eglot-ensure))
-
-    ;; -----------------------
-    ;; LSP 优先
-    ;; -----------------------
-
-    (define-key evil-normal-state-map (kbd "gd") 'xref-find-definitions)
-    (define-key evil-normal-state-map (kbd "gr") 'xref-find-references)
-    (define-key evil-normal-state-map (kbd "gi") 'xref-find-implementations)
-    (define-key evil-normal-state-map (kbd "gt") 'xref-find-type-definitions)
-    (define-key evil-normal-state-map (kbd "gb") 'xref-pop-marker-stack)
-
-    ;; -----------------------
-    ;; ggtags 备用层
-    ;; -----------------------
-
-    (use-package ggtags
-      :hook ((c-ts-mode c++-ts-mode asm-mode) . ggtags-mode))
-
-    (define-prefix-command 'my-gtags-map)
-    (define-key evil-normal-state-map (kbd "gT") 'my-gtags-map)
-
-    (define-key my-gtags-map (kbd "d") 'ggtags-find-definition)
-    (define-key my-gtags-map (kbd "r") 'ggtags-find-reference)
-    (define-key my-gtags-map (kbd "s") 'ggtags-find-symbol)
-  (setq ggtags-completing-read-function #'completing-read)
-    ;; -----------------------
-    ;; 文本搜索
-    ;; -----------------------
-
-    (define-key evil-normal-state-map (kbd "gs") 'consult-ripgrep)
-
-    (use-package rustic
+  (use-package rustic
     :straight t
-    :bind (:map rustic-mode-map
-           ("C-c C-c C-c" . rustic-cargo-run)
-           ("C-c C-c C-t" . rustic-cargo-test)
-           ("C-c C-c C-k" . rustic-cargo-check)
-           ("C-c C-c C-l" . rustic-cargo-clippy)
-           ("C-c C-c C-f" . rustic-format-buffer))
     :config
     (setq rustic-lsp-client 'eglot))
+
+  (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-ts-mode))
+
+  (with-eval-after-load 'eglot 
+    (cond
+     ;; macOS 设置 (使用 MacPorts 安装的 clangd)
+     ((eq system-type 'darwin)
+      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/opt/local/bin/clangd-mp-20")))
+      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/opt/local/bin/clangd-mp-20"))))
+     
+     ;; Linux 设置
+     ((eq system-type 'gnu/linux)
+      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/usr/bin/clangd")))
+      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/usr/bin/clangd"))))
+     
+     ;; 默认 fallback 设置（如 Windows 或未知平台）
+     (t
+      (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
+      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
+
+  (add-to-list 'eglot-server-programs
+             '(python-ts-mode . ("pyright-langserver" "--stdio")))
+
+  (setq major-mode-remap-alist
+        '((python-mode . python-ts-mode)
+  	(c-mode . c-ts-mode)
+  	(c++-mode . c++-ts-mode)
+  	(cmake-mode . cmake-ts-mode)
+  	))
+  ;; hook ts-mode to eglot
+  (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode))
+      (add-hook (intern (concat (symbol-name mode) "-hook"))
+  	                  #'eglot-ensure))
+
+  (use-package ggtags
+    :hook ((c-ts-mode c++-ts-mode asm-mode) . ggtags-mode))
+
 #+end_src
 
 ** Linter
 #+begin_src emacs-lisp
-  (with-eval-after-load 'flymake
-    (define-key flymake-mode-map (kbd "C-c ! l") 'flymake-show-buffer-diagnostics)
-    (define-key flymake-mode-map (kbd "C-c ! n") 'flymake-goto-next-error)
-    (define-key flymake-mode-map (kbd "C-c ! p") 'flymake-goto-prev-error))
 
   (setq flymake-no-changes-timeout nil) ;; 避免自动触发，不干扰打字
   (setq flymake-start-on-save-buffer t)
@@ -538,10 +432,119 @@ your currently entered incomplete command (a prefix) in a popup.
 
 
 
-* Markdown Mode
-** Basic configuration
+* Keymap
+** Evil Mode
+Evil is an extensible vi layer for Emacs. It emulates the main features of Vim,
+turning Emacs into a modal editor. Like Emacs in general, Evil is extensible in
+Emacs Lisp.
+
 #+begin_src emacs-lisp
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+
+  (use-package evil
+    :straight t
+    :config
+    (evil-mode 1)
+    
+    ;; 快速退出插入模式
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    
+    ;; 屏蔽掉默认的 C-z 挂起，防止在 tmux 里误触
+    (define-key evil-normal-state-map (kbd "C-z") nil)
+    (define-key evil-motion-state-map (kbd "C-z") nil))
+
+  (use-package evil-collection
+    :after evil
+    :straight t
+    :config
+    (evil-collection-init))
+
+  (use-package general
+    :straight t
+    :config
+    (general-evil-setup)
+    ;; 定义你的 Leader Key 逻辑
+    (general-create-definer my/leader-keys 
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+    
+    (my/leader-keys
+      
+      "cd" '(xref-find-definitions :which-key "Jump to Definition")
+      "cu" '(xref-find-references  :which-key "Find Usages/References")
+      "cb" '(xref-pop-marker-stack :which-key "Back (Pop Mark)")
+      ;; -----------------------
+      ;; ggtags 相关命令
+      ;; -----------------------
+      "gd" 'ggtags-find-definition
+      "gr" 'ggtags-find-reference
+      "gs" 'ggtags-find-symbol
+      
+      ;; -----------------------
+      ;; 文本搜索
+      ;; -----------------------
+      "gS" 'consult-ripgrep
+      
+      ;; -----------------------
+      ;; Flymake 相关命令
+      ;; -----------------------
+      "fe" 'flymake-show-buffer-diagnostics  ;; 显示当前 buffer 的诊断信息
+      "fn" 'flymake-goto-next-error         ;; 跳转到下一个错误
+      "fp" 'flymake-goto-prev-error         ;; 跳转到上一个错误
+      
+      ;; -----------------------
+      ;; Rustic 相关命令
+      ;; -----------------------
+      "rr" 'rustic-cargo-run             ;; 运行 cargo 项目
+      "rt" 'rustic-cargo-test            ;; 运行 cargo 测试
+      "rk" 'rustic-cargo-check           ;; 运行 cargo 检查
+      "rl" 'rustic-cargo-clippy          ;; 运行 cargo clippy
+      "rf" 'rustic-format-buffer         ;; 格式化当前 buffer
+      
+      ;; -----------------------
+      ;; Python 相关命令
+      ;; -----------------------
+      "pd" 'xref-find-definition         ;; 跳转到 Python 定义
+      "pr" 'xref-find-references         ;; 查找 Python 引用
+      "pf" 'black-buffer                 ;; 格式化 Python 文件 (假设你安装了 black)
+      "pe" 'python-shell-send-buffer     ;; 发送当前 buffer 到 Python REPL
+      "ps" 'python-shell-send-statement ;; 发送当前语句到 Python REPL
+      "pp" 'python-shell-run             ;; 运行 Python 脚本
+      
+      )
+    )
+
+  (setq ggtags-completing-read-function #'completing-read)
+  ;;提供一个更一致的补全体验，尤其是在你已经使用其他补全框架（如 company-mode 或 corfu）时
+
+  (general-def 'normal
+    "C-r" 'recentf
+    "M-." 'xref-find-definitions
+    "M-," 'xref-pop-marker-stack
+    )
+  
 #+end_src
+
+** Which Key 
+which-key is a minor mode for Emacs that displays the key bindings following
+your currently entered incomplete command (a prefix) in a popup.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :straight t
+    :config
+    (which-key-mode)  ;; Enable which-key
+    (setq which-key-idle-delay 0.3)  ;; Show keybinding hints after a short delay
+    ;;(setq which-key-popup-type 'side-window)  ;; Display keybindings in a side window (other options: 'mini-window)
+    ;;(setq which-key-side-window-location 'right)  ;; Position the popup on the right side of the screen
+    ;; side-window cause running timer error
+    (setq which-key-max-description-length 30)  ;; Max length for descriptions in the popup
+    (setq which-key-min-display-lines 10)  ;; Show at least 10 lines in the popup
+    (setq which-key-show-early-on-C-h t)  ;; Show keybindings as soon as you press `C-h`
+  )
+#+end_src
+
 
 
 * Org Mode
@@ -551,6 +554,11 @@ your currently entered incomplete command (a prefix) in a popup.
   (setq-default fill-column 80)
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
 
-  (with-eval-after-load 'evil
-    (evil-set-initial-state 'org-mode 'emacs))
+  (use-package evil-org
+    :straight t
+    :after org
+    :hook (org-mode . evil-org-mode)
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-set-key-theme '(navigation insert shift todo heading)))
 #+end_src
