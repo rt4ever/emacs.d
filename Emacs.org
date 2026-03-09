@@ -375,8 +375,14 @@ easier than finding and setting these variables yourself.
   	                  #'eglot-ensure))
 
   (use-package ggtags
+    :straight t
     :hook ((c-ts-mode c++-ts-mode asm-mode) . ggtags-mode))
 
+  (use-package blacken
+    :straight t
+    :hook (python-ts-mode . blacken-mode)
+    :config
+    (setq blacken-line-length 79))
 #+end_src
 
 ** Linter
@@ -478,12 +484,9 @@ Emacs Lisp.
       ;; -----------------------
       ;; Python 相关命令
       ;; -----------------------
-      "pd" 'xref-find-definition         ;; 跳转到 Python 定义
-      "pr" 'xref-find-references         ;; 查找 Python 引用
-      "pf" 'black-buffer                 ;; 格式化 Python 文件 (假设你安装了 black)
       "pe" 'python-shell-send-buffer     ;; 发送当前 buffer 到 Python REPL
-      "ps" 'python-shell-send-statement ;; 发送当前语句到 Python REPL
-      "pp" 'python-shell-run             ;; 运行 Python 脚本
+      "ps" 'python-shell-send-statement  ;; 发送当前语句到 Python REPL
+      "pf" 'python-shell-send-file       ;; 运行 Python 脚本
       
       )
     )
