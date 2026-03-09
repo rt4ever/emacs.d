@@ -64,12 +64,10 @@ hacker.
 * Basic Setup
 ** PATH
 #+begin_src emacs-lisp
-  (if (eq system-type 'darwin)
-      (use-package exec-path-from-shell
-	:straight t
-	:config
-	 (exec-path-from-shell-initialize))
-    )
+  (use-package exec-path-from-shell
+    :straight t
+    :config
+    (exec-path-from-shell-initialize))
 
 #+end_src
 ** Keep Folders Clean
@@ -150,20 +148,11 @@ easier than finding and setting these variables yourself.
     :custom
     (corfu-auto t)
     (corfu-auto-delay 0.1) ; 嵌入式开发需要更快的响应
-    (corfu-auto-prefix 2)
-    (corfu-popupinfo-delay 0.3) ; 悬停显示函数定义/文档
     :init
     (global-corfu-mode)
     (corfu-popupinfo-mode) ; 开启文档悬停预览
-    :config
-    ;; 配合 Evil：回车即选中，Tab 循环
-    (define-key corfu-map (kbd "RET") 'corfu-insert)
-    (define-key corfu-map [return] 'corfu-insert))
-  (with-eval-after-load 'corfu
-    (define-key corfu-map (kbd "C-n") 'corfu-next)
-    (define-key corfu-map (kbd "C-p") 'corfu-previous)
-    (define-key corfu-map [escape] 'corfu-quite))
-
+    )
+  
   (setq project-vc-extra-root-markers 
         '(".project"        ; 通用/Eclipse
           "Makefile"        ; 嵌入式/U-Boot
@@ -334,24 +323,7 @@ easier than finding and setting these variables yourself.
 *** Theme
 #+begin_src emacs-lisp
 
-  (use-package doom-themes
-    :straight t
-    :config
-    (load-theme 'doom-gruvbox t))
-  ;; (load-theme 'doom-one t))
-  ;; (use-package ef-themes
-    ;;  :straight t
-  ;;  :config
-  ;;  (load-theme 'ef-dark t))
-
-  (use-package kind-icon
-    :straight t
-    :ensure t
-    :after corfu
-    :custom
-    (kind-icon-default-face 'corfu-default) ; 适配主题
-    :config
-    (add-to-list 'corfu-margin-formatters #'kind-icon-formatter))
+  (load-theme 'wombat t)
 #+end_src
 
 
@@ -426,7 +398,7 @@ easier than finding and setting these variables yourself.
                (mapconcat (lambda (diag)
                             (flymake-diagnostic-text diag))
                           diags "\n"))))
-  
+
 #+end_src
 
 
@@ -474,7 +446,7 @@ Emacs Lisp.
       
       "cd" '(xref-find-definitions :which-key "Jump to Definition")
       "cu" '(xref-find-references  :which-key "Find Usages/References")
-      "cb" '(xref-pop-marker-stack :which-key "Back (Pop Mark)")
+      "cb" '(xref-go-back :which-key "Back (Pop Mark)")
       ;; -----------------------
       ;; ggtags 相关命令
       ;; -----------------------
@@ -522,7 +494,7 @@ Emacs Lisp.
   (general-def 'normal
     "C-r" 'recentf
     "M-." 'xref-find-definitions
-    "M-," 'xref-pop-marker-stack
+    "M-," 'xref-go-back
     )
   
 #+end_src
