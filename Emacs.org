@@ -438,6 +438,12 @@ Emacs Lisp.
     :config
     (evil-collection-init))
 
+  (with-eval-after-load 'org
+  (evil-define-key 'normal org-mode-map
+    (kbd "TAB") #'org-cycle
+    (kbd "<tab>") #'org-cycle
+    (kbd "S-TAB") #'org-shifttab))
+  
   (use-package general
     :straight t
     :config
@@ -499,7 +505,7 @@ Emacs Lisp.
     "M-." 'xref-find-definitions
     "M-," 'xref-go-back
     )
-  
+
 #+end_src
 
 ** Which Key 
@@ -529,11 +535,4 @@ your currently entered incomplete command (a prefix) in a popup.
   (setq-default fill-column 80)
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
 
-  (use-package evil-org
-    :straight t
-    :after org
-    :hook (org-mode . evil-org-mode)
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-set-key-theme '(navigation insert shift todo heading)))
 #+end_src
