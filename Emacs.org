@@ -312,11 +312,6 @@ easier than finding and setting these variables yourself.
   (use-package diff-hl
     :straight t)
   (global-diff-hl-mode)
-
-;;  (use-package tree-sitter
-;;    :straight t)
-
-;;  (setq treesit-extra-load-path '("~/.emacs.d/tree-sitter/"))
   
 #+end_src
 
@@ -340,47 +335,38 @@ easier than finding and setting these variables yourself.
     :config
     (setq rustic-lsp-client 'eglot))
 
-  (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-ts-mode))
+  (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-mode))
+  (add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-mode))
 
   (with-eval-after-load 'eglot 
     (cond
      ;; macOS 设置 (使用 MacPorts 安装的 clangd)
      ((eq system-type 'darwin)
-      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/opt/local/bin/clangd-mp-20")))
-      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/opt/local/bin/clangd-mp-20"))))
+      (add-to-list 'eglot-server-programs '(c-mode . ("/opt/local/bin/clangd-mp-20")))
+      (add-to-list 'eglot-server-programs '(c++-mode . ("/opt/local/bin/clangd-mp-20"))))
      
      ;; Linux 设置
      ((eq system-type 'gnu/linux)
-      (add-to-list 'eglot-server-programs '(c-ts-mode . ("/usr/bin/clangd")))
-      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("/usr/bin/clangd"))))
+      (add-to-list 'eglot-server-programs '(c-mode . ("/usr/bin/clangd")))
+      (add-to-list 'eglot-server-programs '(c++-mode . ("/usr/bin/clangd"))))
      
      ;; 默认 fallback 设置（如 Windows 或未知平台）
      (t
-      (add-to-list 'eglot-server-programs '(c-ts-mode . ("clangd")))
-      (add-to-list 'eglot-server-programs '(c++-ts-mode . ("clangd")))))) 
+      (add-to-list 'eglot-server-programs '(c-mode . ("clangd")))
+      (add-to-list 'eglot-server-programs '(c++-mode . ("clangd")))))) 
 
   (add-to-list 'eglot-server-programs
-             '(python-ts-mode . ("pyright-langserver" "--stdio")))
+             '(python-mode . ("pyright-langserver" "--stdio")))
 
-  (setq major-mode-remap-alist
-        '((python-mode . python-ts-mode)
-  	(c-mode . c-ts-mode)
-  	(c++-mode . c++-ts-mode)
-  	(cmake-mode . cmake-ts-mode)
   	))
-  ;; hook ts-mode to eglot
-  (dolist (mode '(c-ts-mode c++-ts-mode python-ts-mode))
-      (add-hook (intern (concat (symbol-name mode) "-hook"))
-  	                  #'eglot-ensure))
 
   (use-package ggtags
     :straight t
-    :hook ((c-ts-mode c++-ts-mode asm-mode) . ggtags-mode))
+    :hook ((c-mode c++-mode asm-mode) . ggtags-mode))
 
   (use-package blacken
     :straight t
-    :hook (python-ts-mode . blacken-mode)
+    :hook (python-mode . blacken-mode)
     :config
     (setq blacken-line-length 79))
 #+end_src
