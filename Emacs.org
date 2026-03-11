@@ -310,6 +310,7 @@ easier than finding and setting these variables yourself.
 
   (add-to-list 'eglot-server-programs
              '(python-mode . ("pyright-langserver" "--stdio")))
+  
   ;; hook eglot to c python mode
   (dolist (mode '(c-mode c++-mode python-mode))
     (add-hook (intern (concat (symbol-name mode) "-hook"))
