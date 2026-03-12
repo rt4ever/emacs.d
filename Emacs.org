@@ -71,11 +71,6 @@ hacker.
 
 #+end_src
 ** Keep Folders Clean
-use the no-littering package to keep folders where we edit files and the Emacs
-configuration folder clean! It knows about a wide variety of variables for built
-in Emacs features as well as those from community packages so it can be much
-easier than finding and setting these variables yourself.
-
 #+begin_src emacs-lisp
   (use-package no-littering
     :straight t
@@ -96,6 +91,11 @@ easier than finding and setting these variables yourself.
     )
   (setq make-backup-files nil)
 #+end_src
+
+use the no-littering package to keep folders where we edit files and the Emacs
+configuration folder clean! It knows about a wide variety of variables for built
+in Emacs features as well as those from community packages so it can be much
+easier than finding and setting these variables yourself.
 
 ** Auto Wrap lines
 #+begin_src emacs-lisp
@@ -126,6 +126,7 @@ easier than finding and setting these variables yourself.
   (use-package ripgrep
     :straight t
     )
+
   (use-package consult
     :straight t
     :bind (;; 1. 快速预览当前文件的函数/符号 (代替 imenu)
@@ -137,7 +138,6 @@ easier than finding and setting these variables yourself.
            ("C-x b" . consult-buffer))
     )
 
-
   ;; Emacs Corfu (Completion Overlay Region FU) 是一个用于 Emacs 的补全框架，
   ;; 它提供了一种新的用户界面来显示补全候选项。Corfu 是 Emacs的一个外部包，
   ;; 它致力于提供一种直观且高效的补全体验。以下是一些 Corfu 的主要特性和功能：
@@ -148,8 +148,15 @@ easier than finding and setting these variables yourself.
     (corfu-auto-delay 0.1) ; 嵌入式开发需要更快的响应
     :init
     (global-corfu-mode)
-    (corfu-popupinfo-mode) ; 开启文档悬停预览
     )
+
+  ;; 解决终端下 Corfu 不显示弹窗的问题
+  (use-package corfu-terminal
+    :straight t
+    :config
+    ;; 只在非图形界面（终端）下开启
+    (unless (display-graphic-p)
+      (corfu-terminal-mode +1)))
 
   ;; Optionally use the `orderless' completion style.
   (use-package orderless
@@ -168,7 +175,7 @@ easier than finding and setting these variables yourself.
     (add-to-list 'completion-at-point-functions #'cape-file)      ; 文件路径补全
     (add-to-list 'completion-at-point-functions #'cape-keyword)   ; 编程语言关键字
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)   ; 当前 buffer 已有的词
-    )
+      )
 #+end_src
 ** Copy Vterm
 #+begin_src emacs-lisp
