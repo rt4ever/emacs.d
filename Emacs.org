@@ -123,6 +123,9 @@ easier than finding and setting these variables yourself.
     ;; 配合 Evil 的跳转习惯，进入目录或选中直接回车
     (define-key vertico-map (kbd "C-l") 'vertico-insert))
 
+  (use-package ripgrep
+    :straight t
+    )
   (use-package consult
     :straight t
     :bind (;; 1. 快速预览当前文件的函数/符号 (代替 imenu)
@@ -131,12 +134,7 @@ easier than finding and setting these variables yourself.
            ("M-s g" . consult-ripgrep) 
            ;; 3. 实时预览的行搜索 (代替 Swiper)
            ("C-s" . consult-line)
-           ;; 4. 项目内快速跳文件
-           ;;("SPC f p" . consult-project-extra-find) ; 需要安装 consult-project-extra
            ("C-x b" . consult-buffer))
-    :config
-    ;; 优化：针对嵌入式大文件，关闭部分预览以防卡顿，或者设置延迟
-    (setq consult-preview-key 'any) ; 敲击任何键时预览，或者设为 (kbd "M-.")
     )
 
 
@@ -152,15 +150,6 @@ easier than finding and setting these variables yourself.
     (global-corfu-mode)
     (corfu-popupinfo-mode) ; 开启文档悬停预览
     )
-  
-  (setq project-vc-extra-root-markers 
-        '(".project"        ; 通用/Eclipse
-          "Makefile"        ; 嵌入式/U-Boot
-          "Kconfig"         ; 内核/U-Boot 配置
-          "CMakeLists.txt"  ; CMake 项目
-          "pyproject.toml"  ; Python 项目 (uv/Poetry/Pytest)
-          "uv.lock"         ; 明确的 uv 项目标识
-          ".git"))          ; 兜底 Git 根目录
 
   ;; Optionally use the `orderless' completion style.
   (use-package orderless
@@ -181,45 +170,6 @@ easier than finding and setting these variables yourself.
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)   ; 当前 buffer 已有的词
     )
 #+end_src
-** Dashboard
-#+begin_src emacs-lisp
-  (use-package nerd-icons
-    :straight t)
-
-  ;; (use-package dashboard
-  ;; :straight t
-  ;; :config
-  ;; ;; 基础设置
-  ;; (setq dashboard-center-content t)
-  ;; (setq dashboard-items '((recents   . 5)
-  ;; 			(bookmarks . 5)
-  ;; 			(projects  . 5)
-  ;; 			(agenda    . 5)
-  ;; 			(registers . 5)))
-  ;; (setq dashboard-item-shortcuts '((recents   . "r")
-  ;; 				 (bookmarks . "m")
-  ;; 				 (projects  . "p")
-  ;; 				 (agenda    . "a")
-  ;; 				 (registers . "e")))
-  ;; (setq dashboard-display-icons-p t)     ; display icons on both GUI and terminal
-  ;; (setq dashboard-icon-type 'nerd-icons) ; use `nerd-icons' package
-
-
-  ;; (setq dashboard-startupify-list '(dashboard-insert-banner
-  ;; 				  dashboard-insert-newline
-  ;; 				  dashboard-insert-banner-title
-  ;; 				  dashboard-insert-newline
-  ;; 				  dashboard-insert-navigator
-  ;; 				  dashboard-insert-newline
-  ;; 				  dashboard-insert-init-info
-  ;; 				  dashboard-insert-items
-  ;; 				  dashboard-insert-newline
-  ;; 				  dashboard-insert-footer))
-
-  ;; ;; 自定义横幅和标题
-  ;; (dashboard-setup-startup-hook))
-#+end_src
-
 ** Copy Vterm
 #+begin_src emacs-lisp
   ;; 在你的 .emacs 或 init.el 中添加
@@ -235,6 +185,9 @@ easier than finding and setting these variables yourself.
 ** UI
 *** Modeline
 #+begin_src emacs-lisp
+  (use-package nerd-icons
+    :straight t)
+
   (use-package doom-modeline
   :straight t
   :init
@@ -357,8 +310,10 @@ easier than finding and setting these variables yourself.
 
   (add-to-list 'eglot-server-programs
              '(python-mode . ("pyright-langserver" "--stdio")))
-
-  	))
+  ;; hook eglot to c python mode
+  (dolist (mode '(c-mode c++-mode python-mode))
+    (add-hook (intern (concat (symbol-name mode) "-hook"))
+  	    #'eglot-ensure))
 
   (use-package ggtags
     :straight t
@@ -452,10 +407,6 @@ Emacs Lisp.
       "gr" 'ggtags-find-reference
       "gs" 'ggtags-find-symbol
       
-      ;; -----------------------
-      ;; 文本搜索
-      ;; -----------------------
-      "gS" 'consult-ripgrep
       
       ;; -----------------------
       ;; Flymake 相关命令
