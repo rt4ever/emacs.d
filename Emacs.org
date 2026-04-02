@@ -65,9 +65,11 @@ hacker.
 ** PATH
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
+    :if (not (eq system-type 'windows-nt))
     :straight t
     :config
-    (exec-path-from-shell-initialize))
+    (when (display-graphic-p)
+    (exec-path-from-shell-initialize)))
 
 #+end_src
 ** Keep Folders Clean
