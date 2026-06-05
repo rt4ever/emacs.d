@@ -16,7 +16,13 @@
 ** Measure Loading Time Performance
 #+begin_src emacs-lisp
   ;; The default is 800 kilobytes.  Measured in bytes.
+  ;; 启动时提高 GC 阈值以加速加载，启动完成后降回合理值，
+  ;; 避免长时间不 GC 导致单次回收时 Emacs 卡顿数百毫秒
   (setq gc-cons-threshold (* 128 1000 1000))
+
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (setq gc-cons-threshold (* 16 1000 1000))))
 
   (defun bc/display-startup-time ()
     (message "Emacs loaded in %s with %d garbage collections."
@@ -68,8 +74,10 @@ hacker.
     :if (not (eq system-type 'windows-nt))
     :straight t
     :config
-    (when (display-graphic-p)
-    (exec-path-from-shell-initialize)))
+    ;; 始终初始化 PATH，不限于 GUI 模式。
+    ;; daemon 模式或纯终端下  display-graphic-p 为 nil，
+    ;; 但 Emacs 仍然需要完整的 shell PATH 才能找到 LSP server 等工具
+    (exec-path-from-shell-initialize))
 
 #+end_src
 ** Keep Folders Clean
@@ -79,6 +87,7 @@ hacker.
     :config
     (require 'recentf)
     (add-to-list 'recentf-exclude no-littering-var-directory)
+    (recentf-mode 1)
 
     ;; no-littering doesn't set this by default so we must place
     ;; auto save files in the same path as it uses for sessions
@@ -191,6 +200,23 @@ easier than finding and setting these variables yourself.
   (add-hook 'kill-ring-save-hook 'copy-from-emacs-to-vterm)
 
 #+end_src
+** Daemon & File Sync
+这些配置是 Emacs 与外部工具（git、Claude Code 等 CLI 工具）协同工作的基础。
+#+begin_src emacs-lisp
+  ;; 开启 daemon 支持，允许 emacsclient 连接
+  ;; 外部工具通过 EDITOR="emacsclient -c -a ''" 可在当前 Emacs 中打开文件
+  (server-start)
+
+  ;; 文件被外部工具修改后自动刷新 buffer（git checkout、Claude Code 编辑等）
+  (global-auto-revert-mode 1)
+
+  ;; 持久化 minibuffer 历史（vertico/consult 的选择记录）
+  (savehist-mode 1)
+
+  ;; 记住上次离开文件时的光标位置
+  (save-place-mode 1)
+#+end_src
+
 ** UI
 *** Modeline
 #+begin_src emacs-lisp
@@ -211,8 +237,6 @@ easier than finding and setting these variables yourself.
 #+end_src
 *** Hightlight
 #+begin_src emacs-lisp
-  (global-visual-line-mode 1)
-
   (if (display-graphic-p)
       (progn
         (scroll-bar-mode -1)        ; Disable visible scrollbar
@@ -246,11 +270,13 @@ easier than finding and setting these variables yourself.
         (set-face-attribute 'variable-pitch nil :font "Source Sans Pro" :height my/default-font-size :weight 'regular)
         ))
 
-  (use-package unicode-fonts
-    :straight t)
-
-  (require 'unicode-fonts)
-  (unicode-fonts-setup)
+  ;; unicode-fonts 会加载大量字体配置，启动时间影响显著（~0.5-1s）。
+  ;; 已使用 nerd-icons + JetBrains Mono（内置大量 Unicode 字形），
+  ;; 一般不需要 unicode-fonts。如需使用，取消下面的注释：
+  ;; (use-package unicode-fonts
+  ;;   :straight t
+  ;;   :config
+  ;;   (unicode-fonts-setup))
   (cond
    ((eq system-type 'darwin)
     (setq initial-frame-alist '((top . 10)
@@ -373,16 +399,17 @@ easier than finding and setting these variables yourself.
 
   (add-hook 'prog-mode-hook 'flymake-mode)
 
-  ;; 自动显示 diagnostic 信息（如 tooltip）
-  (add-hook 'post-command-hook #'flymake-show-diagnostic-if-needed)
-
+  ;; 在 minibuffer 中显示当前光标下的诊断信息
   (defun flymake-show-diagnostic-if-needed ()
-    "在 minibuffer 中显示当前光标下的诊断信息。"
     (when-let ((diags (flymake-diagnostics (point) (point))))
       (message "%s"
                (mapconcat (lambda (diag)
                             (flymake-diagnostic-text diag))
                           diags "\n"))))
+
+  ;; 使用 idle timer 代替 post-command-hook，只在 Emacs 空闲时触发诊断查询，
+  ;; 避免每次按键都执行，减少大文件 + LSP 场景下的输入延迟
+  (run-with-idle-timer 0.5 t #'flymake-show-diagnostic-if-needed)
 
 #+end_src
 
@@ -434,12 +461,15 @@ Emacs Lisp.
       :global-prefix "C-SPC")
     
     (my/leader-keys
-      
-      "cd" '(xref-find-definitions :which-key "Jump to Definition")
-      "cu" '(xref-find-references  :which-key "Find Usages/References")
+
+      ;; xref (LSP-based): 适用于有 compile_commands.json + clangd/pyright 的项目
+      ;; 定义跳转 / 引用查找均通过 LSP server，无需额外索引
+      "cd" '(xref-find-definitions :which-key "Jump to Definition (LSP)")
+      "cu" '(xref-find-references  :which-key "Find Usages/References (LSP)")
       "cb" '(xref-go-back :which-key "Back (Pop Mark)")
       ;; -----------------------
-      ;; ggtags 相关命令
+      ;; ggtags (GNU Global): 适用于无 LSP 的大项目（Linux kernel、U-Boot 等）
+      ;; 需要先在项目根目录运行 gtags -v 生成索引
       ;; -----------------------
       "gd" 'ggtags-find-definition
       "gr" 'ggtags-find-reference
