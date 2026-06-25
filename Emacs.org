@@ -237,38 +237,67 @@ easier than finding and setting these variables yourself.
 #+end_src
 *** Hightlight
 #+begin_src emacs-lisp
-  (if (display-graphic-p)
-      (progn
-        (scroll-bar-mode -1)        ; Disable visible scrollbar
-        (tool-bar-mode -1)          ; Disable the toolbar
-        (tooltip-mode -1)           ; Disable tooltips
-        (set-fringe-mode 10)        ; Give some breathing room
-        (menu-bar-mode -1)            ; Disable the menu bar
-        ))
-
-  ;; Set up the visible bell
+  ;; -------- 非 GUI 相关的全局设置（终端和 GUI 都生效）--------
   (setq visible-bell t)
   (display-time-mode 1)
   (column-number-mode)
   (global-display-line-numbers-mode t)
 
-  ;; Set frame transparenc
+  ;; -------- GUI 外观变量定义 --------
   (defvar my/frame-transparency '(95 . 95))
-  (set-frame-parameter (selected-frame) 'alpha my/frame-transparency)
-  (add-to-list 'default-frame-alist `(alpha . ,my/frame-transparency))
-  ;; (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
-  ;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-  ;; Get font from https://www.fontsquirrel.com/fonts
   (defvar my/default-font-size 160)
   (defvar my/default-variable-font-size 160)
-  (if (display-graphic-p)
-      (progn
-        ;; Set the fixed pitch face
+
+  ;; -------- GUI 外观设置函数（daemon 模式兼容）--------
+  ;; 将 GUI 相关初始化放入 after-make-frame-functions hook，
+  ;; 确保 daemon 模式下 emacsclient -c 创建窗口时也能正确配置外观。
+  (defun my/setup-gui-frame (frame)
+    "Apply GUI-specific settings to FRAME."
+    (with-selected-frame frame
+      (when (display-graphic-p)
+        ;; 禁用 GUI 元素
+        (scroll-bar-mode -1)
+        (tool-bar-mode -1)
+        (tooltip-mode -1)
+        (menu-bar-mode -1)
+        (set-fringe-mode 10)
+
+        ;; 主题
+        (load-theme 'wombat t)
+
+        ;; 透明度
+        (set-frame-parameter nil 'alpha my/frame-transparency)
+
+        ;; 字体 (https://www.fontsquirrel.com/fonts)
         (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height my/default-font-size)
         (set-face-attribute 'default nil :font "JetBrains Mono" :height my/default-font-size)
-        (set-face-attribute 'variable-pitch nil :font "Source Sans Pro" :height my/default-font-size :weight 'regular)
-        ))
+        (set-face-attribute 'variable-pitch nil :font "Source Sans Pro" :height my/default-variable-font-size :weight 'regular))))
+
+  ;; daemon 模式下新创建的 GUI frame 会自动调用
+  (add-hook 'after-make-frame-functions #'my/setup-gui-frame)
+
+  ;; 非 daemon 模式（直接启动 GUI Emacs）时主动调用一次
+  (when (display-graphic-p)
+    (my/setup-gui-frame (selected-frame)))
+
+  ;; 平台相关的 frame 尺寸（使用 default-frame-alist 以兼容 daemon 模式）
+  (cond
+   ((eq system-type 'darwin)
+    (setq default-frame-alist '((top . 10)
+                                (left . 60)
+                                (width . 85)
+                                (height . 50))))
+   ((eq system-type 'windows-nt)
+    (setq default-frame-alist '((top . 10)
+                                (left . 10)
+                                (width . 100)
+                                (height . 45))))
+   (t
+    (message "for other system")))
+
+  ;; 透明度追加到 default-frame-alist（在 cond 之后，避免被 setq 覆盖）
+  (add-to-list 'default-frame-alist `(alpha . ,my/frame-transparency))
+  ;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
   ;; unicode-fonts 会加载大量字体配置，启动时间影响显著（~0.5-1s）。
   ;; 已使用 nerd-icons + JetBrains Mono（内置大量 Unicode 字形），
@@ -277,19 +306,6 @@ easier than finding and setting these variables yourself.
   ;;   :straight t
   ;;   :config
   ;;   (unicode-fonts-setup))
-  (cond
-   ((eq system-type 'darwin)
-    (setq initial-frame-alist '((top . 10)
-          		      (left . 60)
-          			      (width . 85)
-          			      (height . 50))))
-   ((eq system-type 'windows-nt)
-    (setq initial-frame-alist '((top . 10)
-          		      (left . 10)
-          		      (width . 100)
-          		      (height . 45))))
-   (t
-    (message "for other system")))
 
   (use-package dimmer
       :straight t)
@@ -300,13 +316,13 @@ easier than finding and setting these variables yourself.
   (use-package diff-hl
     :straight t)
   (global-diff-hl-mode)
-  
+
 #+end_src
 
 *** Theme
 #+begin_src emacs-lisp
-
-  (load-theme 'wombat t)
+  ;; 主题加载已移至 my/setup-gui-frame 函数中（见 Hightlight 节），
+  ;; 以兼容 daemon 模式（emacs --daemon + emacsclient -c）
 #+end_src
 
 
