@@ -287,6 +287,55 @@
     ((python-mode python-ts-mode) . eglot-ensure))
 #+end_src
 
+** Cite (tags-based navigation, complements Eglot)
+#+begin_src emacs-lisp
+  (use-package citre
+    :defer t
+    :init
+    ;; 让 citre-mode 在 c/c++/python 相关 mode 下自动开启
+    (add-hook 'c-mode-hook 'citre-mode)
+    (add-hook 'c-ts-mode-hook 'citre-mode)
+    (add-hook 'c++-mode-hook 'citre-mode)
+    (add-hook 'c++-ts-mode-hook 'citre-mode)
+    (add-hook 'python-mode-hook 'citre-mode)
+    (add-hook 'python-ts-mode-hook 'citre-mode)
+
+    :config
+    ;; 内核这种量级的项目，用 gtags 后端而不是纯 ctags，性能更好
+    (require 'citre-config)
+    (setq citre-project-root-function #'project-root)
+
+    ;; 跳转类命令，走 C-c 前缀，不占用 eglot 的 M-.
+    :bind
+    (("C-c j" . citre-jump)
+     ("C-c J" . citre-jump-back)
+     ("C-c k" . citre-peek)
+     ("C-c K" . citre-peek-through)
+     ("C-c u" . citre-update-this-tags-file)))
+#+end_src
+
+** Cape (glue补全源，让 eglot 与 citre 的补全叠加而不是互相覆盖)
+#+begin_src emacs-lisp
+  (use-package cape
+    :init
+    (add-hook 'eglot-managed-mode-hook
+              (lambda ()
+                (setq-local completion-at-point-functions
+                            (list (cape-capf-super
+                                   #'eglot-completion-at-point
+                                   #'citre-completion-at-point))))))
+#+end_src
+
+** Eldoc 分工：类型信息交给 eglot，citre 只管 tags 相关能力
+#+begin_src emacs-lisp
+  (with-eval-after-load 'citre
+    (with-eval-after-load 'eglot
+      (add-hook 'eglot-managed-mode-hook
+                (lambda ()
+                  ;; 在 eglot 接管的 buffer 里关掉 citre 的 eldoc，避免重复/覆盖
+                  (setq-local citre-enable-eldoc-integration nil)))))
+#+end_src
+
 * Project
 #+begin_src emacs-lisp
   (use-package project
