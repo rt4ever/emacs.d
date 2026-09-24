@@ -102,6 +102,13 @@
 
   (setq frame-resize-pixelwise t)
 
+  (when (display-graphic-p)
+  (set-face-attribute 'default nil
+                      :family "JetBrains Mono"
+                      :height 120)
+  (set-fontset-font t 'han
+                     (font-spec :family "Microsoft YaHei")))
+
   (require-theme 'modus-themes)
   (load-theme 'modus-vivendi-deuteranopia t)
 
