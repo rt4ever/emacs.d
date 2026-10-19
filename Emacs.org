@@ -103,22 +103,72 @@
   (setq frame-resize-pixelwise t)
 
   (when (display-graphic-p)
-  (set-face-attribute 'default nil
-                      :family "JetBrains Mono"
-                      :height 120)
-  (set-fontset-font t 'han
-                     (font-spec :family "Microsoft YaHei")))
+    (set-face-attribute 'default nil
+                        :family "JetBrains Mono"
+                        :height 120)
+    (set-fontset-font t 'han
+                      (font-spec :family "Microsoft YaHei")))
 
   (require-theme 'modus-themes)
-  (load-theme 'modus-vivendi-deuteranopia t)
+  (setq modus-themes-italic-constructs t
+      modus-themes-bold-constructs nil)
+
+  (load-theme 'modus-vivendi-tritanopia t)
+  ;; doom-themes
+  ;;(use-package doom-themes
+  ;;  :ensure t
+  ;;  :config
+  ;;      (setq doom-themes-enable-bold t
+  ;;            doom-themes-enable-italic t)
+  ;;      (load-theme 'doom-gruvbox t)
+  ;;      (doom-themes-org-config))
+  (use-package doom-modeline :ensure t :init (doom-modeline-mode 1))
+
 
   (use-package diff-hl
     :hook
     (prog-mode . diff-hl-mode))
 
   (global-hl-line-mode 1)
+
+  (require 'whitespace)
+
+  (defun my-zephyr-whitespace ()
+    (setq-local whitespace-style
+                '(face
+                  tabs
+                  spaces
+                  tab-mark
+                  space-mark
+                  trailing))
+    (whitespace-mode 1))
+
+  (add-hook 'yaml-mode-hook #'my-zephyr-whitespace)
+  (add-hook 'dts-mode-hook #'my-zephyr-whitespace)
+
+  (add-to-list 'auto-mode-alist
+               '("/vendor-prefixes\\.txt\\'" . vendor-prefixes-mode))
+
+  (define-derived-mode vendor-prefixes-mode text-mode "Vendor-Prefixes"
+    (setq-local indent-tabs-mode t)
+    (setq-local tab-width 8)
+    (my-zephyr-whitespace))
 #+end_src
 
+** Quick Jump
+#+begin_src emacs-lisp
+  ;; 快速跳转
+  (use-package avy
+    :bind
+    (("M-j" . avy-goto-char-timer)
+     ("M-g w" . avy-goto-word-1)
+     ("M-g l" . avy-goto-line)))
+
+  ;; 窗口跳转
+  (use-package ace-window
+    :bind
+    (("M-o" . ace-window)))
+#+end_src
 
 * Completion
 ** Consult
