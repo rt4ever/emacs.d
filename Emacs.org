@@ -104,8 +104,9 @@
 
   (when (display-graphic-p)
     (set-face-attribute 'default nil
-                        :family "JetBrains Mono"
-                        :height 120)
+                        :font "Iosevka Fixed"
+                        :height 140
+                        :weight 'regular)
     (set-fontset-font t 'han
                       (font-spec :family "Microsoft YaHei")))
 
@@ -113,7 +114,8 @@
   (setq modus-themes-italic-constructs t
       modus-themes-bold-constructs nil)
 
-  (load-theme 'modus-vivendi-tritanopia t)
+  ;;(load-theme 'modus-vivendi-tritanopia t)
+  (load-theme 'wombat)
   ;; doom-themes
   ;;(use-package doom-themes
   ;;  :ensure t
@@ -341,46 +343,48 @@
   (use-package eglot
     :hook
     ((c-mode c-ts-mode c++-mode c++-ts-mode) . eglot-ensure)
+    ((rust-mode rust-ts-mode) . eglot-ensure)
     ((python-mode python-ts-mode) . eglot-ensure))
 #+end_src
 
 ** Cite (tags-based navigation, complements Eglot)
 #+begin_src emacs-lisp
-  (use-package citre
-    :defer t
-    :init
+  ;;(use-package citre
+  ;;  :defer t
+  ;;  :init
     ;; 让 citre-mode 在 c/c++/python 相关 mode 下自动开启
-    (add-hook 'c-mode-hook 'citre-mode)
-    (add-hook 'c-ts-mode-hook 'citre-mode)
-    (add-hook 'c++-mode-hook 'citre-mode)
-    (add-hook 'c++-ts-mode-hook 'citre-mode)
-    (add-hook 'python-mode-hook 'citre-mode)
-    (add-hook 'python-ts-mode-hook 'citre-mode)
+  ;;  (add-hook 'c-mode-hook 'citre-mode)
+  ;;  (add-hook 'c-ts-mode-hook 'citre-mode)
+  ;;  (add-hook 'c++-mode-hook 'citre-mode)
+  ;;  (add-hook 'c++-ts-mode-hook 'citre-mode)
+  ;;  (add-hook 'python-mode-hook 'citre-mode)
+  ;;  (add-hook 'python-ts-mode-hook 'citre-mode)
+  ;;  (add-hook 'rust-tst-mode 'citre-mode)
 
-    :config
+  ;;  :config
     ;; 内核这种量级的项目，用 gtags 后端而不是纯 ctags，性能更好
-    (require 'citre-config)
-    (setq citre-project-root-function #'project-root)
+  ;;  (require 'citre-config)
+  ;;  (setq citre-project-root-function #'project-root)
 
     ;; 跳转类命令，走 C-c 前缀，不占用 eglot 的 M-.
-    :bind
-    (("C-c j" . citre-jump)
-     ("C-c J" . citre-jump-back)
-     ("C-c k" . citre-peek)
-     ("C-c K" . citre-peek-through)
-     ("C-c u" . citre-update-this-tags-file)))
+  ;;  :bind
+  ;;  (("C-c j" . citre-jump)
+  ;;   ("C-c J" . citre-jump-back)
+  ;;   ("C-c k" . citre-peek)
+  ;;   ("C-c K" . citre-peek-through)
+  ;;   ("C-c u" . citre-update-this-tags-file)))
 #+end_src
 
 ** Cape (glue补全源，让 eglot 与 citre 的补全叠加而不是互相覆盖)
 #+begin_src emacs-lisp
-  (use-package cape
-    :init
-    (add-hook 'eglot-managed-mode-hook
-              (lambda ()
-                (setq-local completion-at-point-functions
-                            (list (cape-capf-super
-                                   #'eglot-completion-at-point
-                                   #'citre-completion-at-point))))))
+  ;; (use-package cape
+  ;;  :init
+  ;;  (add-hook 'eglot-managed-mode-hook
+  ;;            (lambda ()
+  ;;              (setq-local completion-at-point-functions
+  ;;                          (list (cape-capf-super
+  ;;                                #'eglot-completion-at-point
+  ;;                                 #'citre-completion-at-point))))))
 #+end_src
 
 ** Eldoc 分工：类型信息交给 eglot，citre 只管 tags 相关能力
